@@ -21,42 +21,42 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID Id;
+    private UUID id;
 
     @Column(unique = true, nullable = false)
-    private String Email;
+    private String email;
 
     @Column(unique = true, nullable = false)
-    private String Name_user;
+    private String nameUser;
 
-    @Column(name = "password_hash", unique = true)
-    private String Password_Hash;
+    @Column(name = "password_hash")
+    private String passwordHash;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "plan_type", nullable = false)
     @Builder.Default
-    public PlanType Plantype = PlanType.FREE;
+    public PlanType plantype = PlanType.FREE;
 
     @Column(name = "activated", nullable = false)
     @Builder.Default
-    private Boolean Activated = true;
+    private Boolean activated = true;
 
     @Column(name = "stripe_customer_id")
-    private String StripeCustomerId;
+    private String stripeCustomerId;
 
     @Column(name = "last_login_at")
-    private String LastLoginAt;
+    private LocalDateTime lastLoginAt;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime CreatedAt;
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
-    private LocalDateTime UpdatedAt;
+    private LocalDateTime updatedAt;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private UserProfile Profile;
+    private UserProfile profile;
 
     public enum PlanType {
         FREE, PRO, PREMIUM;

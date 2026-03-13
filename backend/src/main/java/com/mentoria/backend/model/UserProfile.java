@@ -8,8 +8,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.Type;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.Map;
 import java.util.List;
@@ -26,27 +24,27 @@ public class UserProfile {
 
     @Id
     @GeneratedValue(strategy =GenerationType.UUID)
-    private UUID Id;
+    private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
-    private User User;
+    private User user;
 
     @Column(name = "target_exam")
-    private String TargetExam;
+    private String targetExam;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "knowledge_level")
     @Builder.Default
-    private KnowledLevel KnowLegLevel = KnowledLevel.BEGINNER;
+    private KnowledgeLevel knowLegLevel = KnowledgeLevel.BEGINNER;
 
     @Column(name = "study_hours_per_day")
     @Builder.Default
-    private Integer StudyHoursPerDay = 1;
+    private Integer studyHoursPerDay = 1;
 
     @Type(JsonBinaryType.class)
     @Column(name = "available_days", columnDefinition = "jsonb")
-    private List<String> Availabledays;
+    private List<String> available;
 
     @Type(JsonBinaryType.class)
     @Column(name = "objectives", columnDefinition = "jsonb")
@@ -62,7 +60,7 @@ public class UserProfile {
 
     @Type(JsonBinaryType.class)
     @Column(name = "subjects_priority", columnDefinition = "jsonb")
-    private List<Map<String, Object>> SubjectsPriority;
+    private List<Map<String, Object>> subjectsPriority;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "learning_style")
@@ -71,25 +69,25 @@ public class UserProfile {
 
     @Column(name = "completed_onboarding", nullable = false)
     @Builder.Default
-    private String CompletedOnBoarding;
+    private String completedOnBoarding;
 
     @Type(JsonBinaryType.class)
     @Column(name = "extra_info", columnDefinition = "jsonb")
-    private Map<String, Object> ExtraInfo;
+    private Map<String, Object> extraInfo;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime CreatedAt;
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
-    private LocalDateTime UpdatedAt;
+    private LocalDateTime updatedAt;
 
     public enum LearningStyle {
-        VISUAL, READING, PRATICAL, MIXED
+        VISUAL, READING, PRACTICAL, MIXED
     }
 
-    public enum KnowledLevel {
+    public enum KnowledgeLevel {
         BEGINNER, INTERMEDIARY, ADVANCED
     }
 
