@@ -12,8 +12,10 @@ import java.util.UUID;
 @Repository
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> {
 
-    List<ChatMessage> findBySessionIdForOrderByCreatedAtAsc(UUID sessionId);
+    List<ChatMessage> findBySession_IdOrderByCreatedAtAsc(UUID sessionId);
 
-    @Query("SELECT FROM ChatMessage m WHERE m.session.id = :sessionId ORDER BY m.createdAt DESC")
-    List<ChatMessage> findLastBySessionId(UUID sessionId, Pageable pageable);
+    @Query("SELECT m FROM ChatMessage m WHERE m.session.id = :sessionId ORDER BY m.createdAt DESC")
+    List<ChatMessage> findLastNBySessionId(UUID sessionId, Pageable pageable);
+
+    long countBySession_Id(UUID sessionId);
 }

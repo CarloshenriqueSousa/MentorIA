@@ -8,22 +8,21 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.UUID;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, UUID>{
+public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByEmail(String email);
 
     boolean existsByEmail(String email);
 
     @Modifying
-    @Query("UPDATE User u SET u.lastLoginAt = :now WHERE u.id = :id")
-    void updateLastLogin(@Param("now") LocalDateTime now, @Param("id") UUID id);
+    @Query("UPDATE User u SET u.lastLoginAt = :now WHERE u.id = :userId")
+    void updateLastLogin(@Param("userId") UUID userId, @Param("now") LocalDateTime now);
 
     @Modifying
-    @Query("UPDATE User u Set u.planType = :planType WHERE u.id = :userId")
-    void updatePlanType(@Param("planType") User.PlanType planType, @Param("userId") UUID userId);
+    @Query("UPDATE User u SET u.planType = :planType WHERE u.id = :userId")
+    void updatePlanType(@Param("userId") UUID userId, @Param("planType") User.PlanType planType);
 }

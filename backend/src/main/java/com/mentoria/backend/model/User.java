@@ -8,38 +8,34 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-
 @Entity
 @Table(name = "users")
-@Setter
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 @Builder
-
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(unique = true, nullable = false)
-    private String nameUser;
-
-    @Column(name = "password_hash")
+    @Column(name = "password_hash", nullable = false)
     private String passwordHash;
+
+    @Column(nullable = false)
+    private String name;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "plan_type", nullable = false)
     @Builder.Default
-    public PlanType plantype = PlanType.FREE;
+    private PlanType planType = PlanType.FREE;
 
-    @Column(name = "activated", nullable = false)
+    @Column(name = "is_active", nullable = false)
     @Builder.Default
-    private Boolean activated = true;
+    private boolean isActive = true;
 
     @Column(name = "stripe_customer_id")
     private String stripeCustomerId;
@@ -59,6 +55,6 @@ public class User {
     private UserProfile profile;
 
     public enum PlanType {
-        FREE, PRO, PREMIUM;
+        FREE, BASIC, PREMIUM
     }
 }

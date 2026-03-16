@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+
+# OS / tooling
+**/target/
+**/build/
+*.log
+

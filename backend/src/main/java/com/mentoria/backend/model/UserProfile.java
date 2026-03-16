@@ -4,26 +4,23 @@ import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Entity
-@Table(name = "user_profile")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "user_profiles")
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 @Builder
-
 public class UserProfile {
 
     @Id
-    @GeneratedValue(strategy =GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -36,15 +33,15 @@ public class UserProfile {
     @Enumerated(EnumType.STRING)
     @Column(name = "knowledge_level")
     @Builder.Default
-    private KnowledgeLevel knowLegLevel = KnowledgeLevel.BEGINNER;
+    private KnowledgeLevel knowledgeLevel = KnowledgeLevel.BEGINNER;
 
     @Column(name = "study_hours_per_day")
     @Builder.Default
-    private Integer studyHoursPerDay = 1;
+    private Integer studyHoursPerDay = 2;
 
     @Type(JsonBinaryType.class)
     @Column(name = "available_days", columnDefinition = "jsonb")
-    private List<String> available;
+    private List<String> availableDays;
 
     @Type(JsonBinaryType.class)
     @Column(name = "objectives", columnDefinition = "jsonb")
@@ -69,7 +66,7 @@ public class UserProfile {
 
     @Column(name = "completed_onboarding", nullable = false)
     @Builder.Default
-    private String completedOnBoarding;
+    private boolean completedOnboarding = false;
 
     @Type(JsonBinaryType.class)
     @Column(name = "extra_info", columnDefinition = "jsonb")
@@ -83,12 +80,11 @@ public class UserProfile {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    public enum KnowledgeLevel {
+        BEGINNER, INTERMEDIATE, ADVANCED
+    }
+
     public enum LearningStyle {
         VISUAL, READING, PRACTICAL, MIXED
     }
-
-    public enum KnowledgeLevel {
-        BEGINNER, INTERMEDIARY, ADVANCED
-    }
-
 }

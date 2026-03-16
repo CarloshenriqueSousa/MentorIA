@@ -3,9 +3,9 @@ spring:
     name: mentoria-backend
 
   datasource:
-    url: jdbc:postgresql://db.aegjansdipbegfgtqznu.supabase.co:5432/postgres?user=postgres&password=[YpddUV5HQ$vv2M03&5hvyZqFB8*6A^kYp00txtDmtkFGE9nj3KkTDqXQ!F5Y]
-    username: postgres
-    password: YpddUV5HQ$vv2M03&5hvyZqFB8*6A^kYp00txtDmtkFGE9nj3KkTDqXQ!F5Y
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:

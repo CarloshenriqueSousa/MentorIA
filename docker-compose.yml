@@ -1,0 +1,74 @@
+services:
+
+  db:
+    image: postgres:16-alpine
+    container_name: mentoria-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: mentoria
+      POSTGRES_USER: mentoria
+      POSTGRES_PASSWORD: mentoria
+    volumes:
+      - mentoria_pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mentoria -d mentoria"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: dockerfile
+    container_name: mentoria-backend
+    ports:
+      - "8080:8080"
+    environment:
+
+      DATABASE_URL: ${DATABASE_URL:-jdbc:postgresql://db:5432/mentoria}
+      DATABASE_USER: ${DATABASE_USER:-mentoria}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-mentoria}
+      JWT_SECRET: ${JWT_SECRET}
+      AI_SERVICE_URL: http://ai-service:8000
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      STRIPE_PRICE_BASIC: ${STRIPE_PRICE_BASIC}
+      STRIPE_PRICE_PREMIUM: ${STRIPE_PRICE_PREMIUM}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+    depends_on:
+      ai-service:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: dockerfile
+    container_name: mentoria-ai
+    ports:
+      - "8000:8000"
+    environment:
+      GROK_API_KEY: ${GROK_API_KEY:-}
+      GROK_BASE_URL: https://api.x.ai/v1
+      GROK_MODEL: ${GROK_MODEL:-grok-3-mini-fast}
+      ALLOWED_ORIGINS: http://localhost:8080
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  mentoria_pgdata:
