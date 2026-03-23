@@ -3,7 +3,7 @@
     <h2 class="text-2xl font-bold text-slate-900 mb-1">Criar conta grátis</h2>
     <p class="text-slate-500 mb-8">Comece a estudar com seu mentor IA hoje</p>
 
-    <UForm :schema="schema" :state="form" @submit="onSubmit" class="space-y-4">
+    <UForm :schema="schema" :state="form" class="space-y-4" @submit="onSubmit">
       <UFormField label="Nome completo" name="name">
         <UInput
           v-model="form.name"

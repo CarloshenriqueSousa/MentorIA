@@ -3,7 +3,7 @@
     <h2 class="text-2xl font-bold text-slate-900 mb-1">Bem-vindo de volta</h2>
     <p class="text-slate-500 mb-8">Entre na sua conta para continuar estudando</p>
 
-    <UForm :schema="schema" :state="form" @submit="onSubmit" class="space-y-4">
+    <UForm :schema="schema" :state="form" class="space-y-4" @submit="onSubmit">
       <UFormField label="Email" name="email">
         <UInput
           v-model="form.email"

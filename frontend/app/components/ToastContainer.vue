@@ -38,8 +38,8 @@ if (import.meta.client) {
   <div class="fixed right-4 top-4 z-50 flex w-[360px] max-w-[90vw] flex-col gap-2">
     <div
       v-for="toast in (toasts as ToastLike[])"
-      :key="toast.id"
       v-show="toast.open"
+      :key="toast.id"
       class="rounded-md border bg-neutral-900 px-4 py-3 text-neutral-50 shadow-md"
       :class="{
         'border-error': toast.color === 'error',

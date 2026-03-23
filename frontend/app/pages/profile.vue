@@ -26,7 +26,7 @@
         </div>
       </div>
 
-      <UForm :state="profileForm" @submit="saveProfile" class="space-y-4">
+      <UForm :state="profileForm" class="space-y-4" @submit="saveProfile">
         <UFormField label="Nome completo">
           <UInput v-model="profileForm.name" icon="i-heroicons-user" class="w-full" />
         </UFormField>
@@ -42,7 +42,7 @@
       <template #header>
         <h2 class="font-semibold text-slate-900">Alterar senha</h2>
       </template>
-      <UForm :state="passwordForm" @submit="changePassword" class="space-y-4">
+      <UForm :state="passwordForm" class="space-y-4" @submit="changePassword">
         <UFormField label="Senha atual">
           <UInput v-model="passwordForm.currentPassword" type="password" icon="i-heroicons-lock-closed" class="w-full" />
         </UFormField>

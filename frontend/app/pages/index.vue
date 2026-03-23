@@ -25,7 +25,7 @@
     <section class="max-w-7xl mx-auto px-4 py-24 text-center">
       <UBadge label="🚀 Novo: Planos de estudo com IA" color="primary" variant="subtle" class="mb-6" />
       <h1 class="text-5xl font-bold text-slate-900 mb-6 leading-tight">
-        Seu mentor de estudos<br />
+        Seu mentor de estudos<br >
         <span class="text-primary-600">disponível 24 horas</span>
       </h1>
       <p class="text-xl text-slate-600 mb-10 max-w-2xl mx-auto">
@@ -64,7 +64,8 @@
         <h2 class="text-3xl font-bold text-center text-slate-900 mb-4">Planos simples e acessíveis</h2>
         <p class="text-center text-slate-500 mb-16">Comece grátis e faça upgrade quando quiser</p>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          <UCard v-for="plan in plans" :key="plan.name"
+          <UCard
+v-for="plan in plans" :key="plan.name"
             :class="plan.featured ? 'ring-2 ring-primary-600' : ''">
             <div v-if="plan.featured" class="text-center mb-4">
               <UBadge label="Mais popular" color="primary" />

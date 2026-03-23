@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("🤖 MentorIA AI Service iniciando...")
-    logger.info(f"Modelo: {os.getenv('GROK_MODEL', 'grok-3-mini-fast')}")
+    logger.info(f"Modelo: {os.getenv('CLAUDE_MODEL', 'claude-3-5-sonnet-latest')}")
     yield
     logger.info("AI Service encerrando")
 
@@ -46,7 +46,7 @@ async def health():
     return {
         "status": "healthy",
         "service": "mentoria-ai",
-        "model": os.getenv("GROK_MODEL", "grok-3-mini-fast")
+        "model": os.getenv("CLAUDE_MODEL", "claude-3-5-sonnet-latest")
     }
 
 

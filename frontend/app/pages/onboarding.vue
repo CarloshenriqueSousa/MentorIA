@@ -103,7 +103,7 @@
               min="1"
               max="12"
               class="w-full accent-primary-600"
-            />
+            >
             <div class="flex justify-between text-xs text-slate-400 mt-1">
               <span>1h</span>
               <span>12h</span>
