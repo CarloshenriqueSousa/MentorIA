@@ -5,7 +5,7 @@
       <h1 class="text-2xl font-bold text-slate-900 mb-2">Página não encontrada</h1>
       <p class="text-slate-500 mb-8">A página que você procura não existe ou foi movida.</p>
       <div class="flex gap-3 justify-center">
-        <UButton label="Voltar" variant="outline" color="gray" @click="$router.back()" />
+        <UButton label="Voltar" variant="outline" color="neutral" @click="$router.back()" />
         <NuxtLink to="/dashboard">
           <UButton label="Ir para o Dashboard" />
         </NuxtLink>

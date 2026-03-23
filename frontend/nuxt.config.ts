@@ -22,6 +22,13 @@ export default defineNuxtConfig({
     }
   },
 
+  routeRules: {
+    '/dashboard/**': { ssr: false },
+    '/chat/**': { ssr: false },
+    '/study-plan/**': { ssr: false },
+    '/auth/**': { ssr: false },
+  },
+
   app: {
     head: {
       title: 'MentorIA',
@@ -38,5 +45,13 @@ export default defineNuxtConfig({
   colorMode: {
     preference: 'light',
     fallback: 'light',
+  },
+
+  vite: {
+    build: {
+      // Ajuda a evitar falhas por bindings nativos bloqueados no Windows durante o build.
+      // (Mantém o build funcional, ainda que sem minificação.)
+      minify: false,
+    },
   },
 })

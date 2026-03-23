@@ -12,7 +12,7 @@
         </div>
         <div class="flex items-center gap-3">
           <NuxtLink to="/auth/login">
-            <UButton variant="ghost" color="gray" label="Entrar" />
+            <UButton variant="ghost" color="neutral" label="Entrar" />
           </NuxtLink>
           <NuxtLink to="/auth/register">
             <UButton label="Começar grátis" />
@@ -35,7 +35,7 @@
         <NuxtLink to="/auth/register">
           <UButton size="xl" label="Começar grátis agora" trailing-icon="i-heroicons-arrow-right" />
         </NuxtLink>
-        <UButton size="xl" variant="outline" color="gray" label="Ver como funciona" />
+        <UButton size="xl" variant="outline" color="neutral" label="Ver como funciona" />
       </div>
       <p class="text-sm text-slate-400 mt-4">Grátis para começar • Sem cartão de crédito</p>
     </section>
@@ -83,7 +83,7 @@
             <NuxtLink to="/auth/register">
               <UButton
                 :variant="plan.featured ? 'solid' : 'outline'"
-                :color="plan.featured ? 'primary' : 'gray'"
+                :color="plan.featured ? 'primary' : 'neutral'"
                 block
                 :label="plan.cta"
               />

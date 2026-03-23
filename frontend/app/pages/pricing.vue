@@ -60,7 +60,7 @@
             v-if="plan.id === 'free'"
             block
             variant="outline"
-            color="gray"
+            color="neutral"
             label="Plano atual"
             disabled
           />
@@ -68,7 +68,7 @@
             v-else-if="authStore.user?.planType === plan.id.toUpperCase()"
             block
             variant="outline"
-            color="green"
+            color="success"
             label="✓ Plano ativo"
             disabled
           />
@@ -76,7 +76,7 @@
             v-else
             block
             :variant="plan.featured ? 'solid' : 'outline'"
-            :color="plan.featured ? 'primary' : 'gray'"
+            :color="plan.featured ? 'primary' : 'neutral'"
             :label="plan.cta"
             :loading="checkingOut === plan.id"
             @click="checkout(plan.id)"
@@ -161,17 +161,22 @@ const faq = [
   { label: 'Meus dados estão seguros?', content: 'Sim. Seguimos todas as normas da LGPD e nunca compartilhamos seus dados com terceiros.' },
 ]
 
+type CheckoutResponse = {
+  url: string
+}
+
 const checkout = async (planId: string) => {
   checkingOut.value = planId
   try {
-    const response = await post<any>('/payments/checkout', {
+    const response = await post<CheckoutResponse>('/payments/checkout', {
       plan: planId.toUpperCase(),
       successUrl: `${window.location.origin}/dashboard?upgrade=success`,
       cancelUrl: `${window.location.origin}/pricing`,
     })
     window.location.href = response.url
-  } catch (error: any) {
-    toast.add({ title: 'Erro ao iniciar checkout', description: error.message, color: 'red' })
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Erro ao iniciar checkout'
+    toast.add({ title: 'Erro ao iniciar checkout', description: message, color: 'error' })
   } finally {
     checkingOut.value = null
   }

@@ -1,17 +1,17 @@
 from fastapi import APIRouter, HTTPException
 from app.models.schemas import StudyPlanRequest, StudyPlanResponse
-from app.services.grok_service import GrokService
+from app.services.agent_service import AgentService
 import logging
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-grok_service = GrokService()
+agent_service = AgentService()
 
 
 @router.post("/study-plan", response_model=StudyPlanResponse)
 async def generate_study_plan(request: StudyPlanRequest):
     try:
-        plan = await grok_service.generate_study_plan(request.profile)
+        plan = await agent_service.generate_study_plan(request.profile)
         return StudyPlanResponse(
             title=plan.get("title", f"Plano - {request.profile.target_exam}"),
             description=plan.get("description", ""),

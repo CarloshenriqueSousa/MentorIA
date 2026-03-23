@@ -20,6 +20,7 @@ public class ChatMessage {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private ChatSession session;
 
     @Enumerated(EnumType.STRING)

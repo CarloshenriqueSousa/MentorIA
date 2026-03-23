@@ -1,17 +1,17 @@
 from fastapi import APIRouter, HTTPException
 from app.models.schemas import ChatRequest, ChatResponseSchema
-from app.services.grok_service import GrokService
+from app.services.agent_service import AgentService
 import logging
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-grok_service = GrokService()
+agent_service = AgentService()
 
 
 @router.post("/generate", response_model=ChatResponseSchema)
 async def generate_response(request: ChatRequest):
     try:
-        result = await grok_service.generate_chat_response(
+        result = await agent_service.generate_chat_response(
             user_message=request.message,
             history=request.history,
             profile=request.profile

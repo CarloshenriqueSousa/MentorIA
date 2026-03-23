@@ -120,7 +120,7 @@ const mentorStyles = [
 const saveSettings = async () => {
   saving.value = true
   await new Promise(r => setTimeout(r, 800))
-  toast.add({ title: 'Configurações salvas!', color: 'green' })
+  toast.add({ title: 'Configurações salvas!', color: 'success' })
   saving.value = false
 }
 </script>

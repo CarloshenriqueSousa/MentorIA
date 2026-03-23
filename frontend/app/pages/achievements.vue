@@ -59,7 +59,7 @@
             <UBadge
               v-if="achievement.unlocked"
               label="Desbloqueada"
-              color="green"
+              color="success"
               size="xs"
               variant="subtle"
               class="mt-1"
@@ -76,7 +76,24 @@
 definePageMeta({ layout: 'default', middleware: 'auth' })
 
 const { get } = useApi()
-const dashboard = ref<any>(null)
+
+type Achievement = {
+  id: string
+  icon: string
+  name: string
+  description: string
+  unlocked: boolean
+}
+
+type DashboardResponse = {
+  totalXp: number
+  currentStreakDays: number
+  totalMinutesStudied: number
+  totalExercisesDone: number
+  achievements: Achievement[]
+}
+
+const dashboard = ref<DashboardResponse | null>(null)
 
 const currentLevel = computed(() => {
   const xp = dashboard.value?.totalXp || 0
@@ -95,10 +112,14 @@ const stats = computed(() => [
   { emoji: '🔥', value: dashboard.value?.currentStreakDays || 0, label: 'Dias seguidos' },
   { emoji: '⏱️', value: `${Math.floor((dashboard.value?.totalMinutesStudied || 0) / 60)}h`, label: 'Estudadas' },
   { emoji: '📝', value: dashboard.value?.totalExercisesDone || 0, label: 'Exercícios' },
-  { emoji: '🏆', value: dashboard.value?.achievements?.filter((a: any) => a.unlocked).length || 0, label: 'Medalhas' },
+  {
+    emoji: '🏆',
+    value: dashboard.value?.achievements?.filter((a) => a.unlocked)?.length ?? 0,
+    label: 'Medalhas'
+  },
 ])
 
 onMounted(async () => {
-  dashboard.value = await get('/dashboard')
+  dashboard.value = await get<DashboardResponse>('/dashboard')
 })
 </script>

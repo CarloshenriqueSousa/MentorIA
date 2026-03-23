@@ -4,14 +4,43 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cb22d4c9-cd47-41ff-ac88-955d6cd8ae55" name="Changes" comment="" />
+    <list default="true" id="cb22d4c9-cd47-41ff-ac88-955d6cd8ae55" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ai-service/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/ai-service/app/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ai-service/app/services/grok_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/ai-service/app/services/grok_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ai-service/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ai-service/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/mentoria/backend/security/JwtTokenProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/mentoria/backend/security/JwtTokenProvider.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/app.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/app.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/components/layout/default.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/components/layout/default.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/layouts/auth.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/layouts/auth.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/pages/achievements.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/pages/achievements.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/pages/auth/login.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/pages/auth/login.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/pages/auth/register.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/pages/auth/register.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/pages/chat/history.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/pages/chat/history.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/pages/chat/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/pages/chat/index.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/pages/dashboard.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/pages/dashboard.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/pages/error/404.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/pages/error/404.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/pages/error/500.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/pages/error/500.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/pages/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/pages/index.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/pages/onboarding.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/pages/onboarding.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/pages/pricing.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/pages/pricing.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/pages/profile.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/pages/profile.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/pages/settings.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/pages/settings.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/pages/study-plan.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/pages/study-plan.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/stores/auth.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/stores/auth.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/eslint.config.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/eslint.config.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/nuxt.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/nuxt.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/pnpm-lock.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/pnpm-lock.yaml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="85" />
+    <option name="cachedIndexableFilesCount" value="177077" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-interface User {
+export interface User {
   id: string
   name: string
   email: string
@@ -34,7 +34,7 @@ export const useAuthStore = defineStore('auth', {
       this.user = data.user
 
       // Persistir no localStorage
-      if (process.client) {
+      if (import.meta.client) {
         localStorage.setItem('access_token', data.accessToken)
         localStorage.setItem('refresh_token', data.refreshToken)
         localStorage.setItem('user', JSON.stringify(data.user))
@@ -42,7 +42,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     loadFromStorage() {
-      if (process.client) {
+      if (import.meta.client) {
         const token = localStorage.getItem('access_token')
         const refresh = localStorage.getItem('refresh_token')
         const user = localStorage.getItem('user')
@@ -60,7 +60,7 @@ export const useAuthStore = defineStore('auth', {
       this.accessToken = null
       this.refreshToken = null
 
-      if (process.client) {
+      if (import.meta.client) {
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
         localStorage.removeItem('user')
@@ -70,7 +70,7 @@ export const useAuthStore = defineStore('auth', {
     updateUser(updates: Partial<User>) {
       if (this.user) {
         this.user = { ...this.user, ...updates }
-        if (process.client) {
+        if (import.meta.client) {
           localStorage.setItem('user', JSON.stringify(this.user))
         }
       }

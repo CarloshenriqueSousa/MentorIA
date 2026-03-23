@@ -23,7 +23,7 @@
               <h2 class="font-semibold text-slate-900">{{ activePlan.title }}</h2>
               <p class="text-sm text-slate-500 mt-1">{{ activePlan.description }}</p>
             </div>
-            <UBadge label="Ativo" color="green" variant="subtle" />
+            <UBadge label="Ativo" color="success" variant="subtle" />
           </div>
         </template>
 
@@ -66,11 +66,11 @@
                   class="p-3 bg-slate-50 rounded-lg"
                 >
                   <div class="flex items-center gap-2 mb-2">
-                    <UBadge :label="day.day" color="gray" variant="outline" size="xs" />
+                    <UBadge :label="day.day" color="neutral" variant="outline" size="xs" />
                     <span class="text-xs text-slate-500">{{ day.duration_minutes }} min</span>
                     <UBadge
                       :label="day.priority"
-                      :color="day.priority === 'alta' ? 'red' : day.priority === 'media' ? 'yellow' : 'green'"
+                        :color="day.priority === 'alta' ? 'error' : day.priority === 'media' ? 'warning' : 'success'"
                       size="xs"
                       variant="subtle"
                     />
@@ -126,7 +126,7 @@
             <p class="text-sm font-medium text-slate-700">{{ plan.title }}</p>
             <p class="text-xs text-slate-400">{{ formatDate(plan.createdAt) }}</p>
           </div>
-          <UBadge :label="plan.status" color="gray" variant="outline" size="xs" />
+          <UBadge :label="plan.status" color="neutral" variant="outline" size="xs" />
         </div>
       </div>
     </UCard>
@@ -140,27 +140,63 @@ definePageMeta({ layout: 'default', middleware: 'auth' })
 const { get, post } = useApi()
 const toast = useToast()
 
-const activePlan = ref<any>(null)
-const allPlans = ref<any[]>([])
+type PlanDay = {
+  day: string
+  duration_minutes: number
+  priority: 'alta' | 'media' | 'baixa' | string
+  topics: string[]
+}
+
+type PlanWeek = {
+  week: number
+  focus?: string
+  days?: PlanDay[]
+}
+
+type PlanContent = {
+  weeks?: PlanWeek[]
+}
+
+type ActivePlan = {
+  title: string
+  description: string
+  completionPercentage: number
+  startDate: string
+  endDate: string
+  subjectsCovered?: string[]
+  planContent?: PlanContent
+}
+
+type PreviousPlan = {
+  id: string
+  title: string
+  createdAt: string
+  status: string
+  isActive: boolean
+}
+
+const activePlan = ref<ActivePlan | null>(null)
+const allPlans = ref<PreviousPlan[]>([])
 const generating = ref(false)
 
 const weeks = computed(() => {
   const content = activePlan.value?.planContent
   if (!content?.weeks) return []
-  return content.weeks.map((w: any) => ({
+  return content.weeks.map((w) => ({
     label: `Semana ${w.week} — ${w.focus || ''}`,
-    days: w.days || [],
+    days: w.days ?? [],
   }))
 })
 
 const generatePlan = async () => {
   generating.value = true
   try {
-    activePlan.value = await post('/study-plans/generate', {})
-    toast.add({ title: 'Plano gerado com sucesso! 🎉', color: 'green' })
+    activePlan.value = await post<ActivePlan>('/study-plans/generate', {})
+    toast.add({ title: 'Plano gerado com sucesso! 🎉', color: 'success' })
     await loadPlans()
-  } catch (error: any) {
-    toast.add({ title: 'Erro ao gerar plano', description: error.message, color: 'red' })
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Erro ao gerar plano'
+    toast.add({ title: 'Erro ao gerar plano', description: message, color: 'error' })
   } finally {
     generating.value = false
   }
@@ -168,8 +204,10 @@ const generatePlan = async () => {
 
 const loadPlans = async () => {
   try {
-    allPlans.value = await get('/study-plans')
-    activePlan.value = allPlans.value.find((p: any) => p.isActive) || null
+    allPlans.value = await get<PreviousPlan[]>('/study-plans')
+    // O backend retorna objetos diferentes para planos ativos vs anteriores,
+    // mas quando `isActive` é true, esperamos que o payload seja compatível com `ActivePlan`.
+    activePlan.value = (allPlans.value.find((p) => p.isActive) as ActivePlan | undefined) ?? null
   } catch (error) {
     console.error('Error loading plans:', error)
   }

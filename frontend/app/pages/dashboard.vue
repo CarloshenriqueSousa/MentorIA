@@ -37,7 +37,7 @@
           <template #header>
             <div class="flex items-center justify-between">
               <h2 class="font-semibold text-slate-900">Progresso da semana</h2>
-              <UBadge :label="`${dashboard?.currentStreakDays || 0} dias seguidos 🔥`" color="orange" variant="subtle" />
+              <UBadge :label="`${dashboard?.currentStreakDays || 0} dias seguidos 🔥`" color="warning" variant="subtle" />
             </div>
           </template>
 
@@ -194,7 +194,36 @@ const authStore = useAuthStore()
 const { get, post } = useApi()
 const toast = useToast()
 
-const dashboard = ref<any>(null)
+type Achievement = {
+  id: string
+  icon: string
+  name: string
+  unlocked: boolean
+}
+
+type WeeklyProgressDay = {
+  date: string
+  minutesStudied: number
+}
+
+type ActivePlan = {
+  title: string
+  completionPercentage: number
+  daysRemaining: number
+}
+
+type DashboardResponse = {
+  totalXp: number
+  currentStreakDays: number
+  totalMinutesStudied: number
+  totalExercisesDone: number
+  achievements: Achievement[]
+  weeklyProgress: WeeklyProgressDay[]
+  activePlan?: ActivePlan | null
+  nextSessionRecommendation?: string | null
+}
+
+const dashboard = ref<DashboardResponse | null>(null)
 const showProgressModal = ref(false)
 const savingProgress = ref(false)
 
@@ -243,15 +272,14 @@ const stats = computed(() => [
 ])
 
 const maxMinutes = computed(() => {
-  const progress = dashboard.value?.weeklyProgress || []
-  return Math.max(...progress.map((d: any) => d.minutesStudied), 60)
+  const progress = dashboard.value?.weeklyProgress ?? []
+  return Math.max(...progress.map((d) => d.minutesStudied), 60)
 })
 
 const totalHours = computed(() => {
-  const total = dashboard.value?.weeklyProgress?.reduce(
-    (acc: number, d: any) => acc + d.minutesStudied, 0
-  ) || 0
-  return (total / 60).toFixed(1)
+  const progress = dashboard.value?.weeklyProgress ?? []
+  const totalMinutes = progress.reduce((acc, d) => acc + d.minutesStudied, 0)
+  return (totalMinutes / 60).toFixed(1)
 })
 
 const formatDay = (date: string) => {
@@ -263,11 +291,12 @@ const saveProgress = async () => {
   savingProgress.value = true
   try {
     await post('/dashboard/progress', progressForm)
-    toast.add({ title: 'Progresso salvo! 🎉', color: 'green' })
+    toast.add({ title: 'Progresso salvo! 🎉', color: 'success' })
     showProgressModal.value = false
     await loadDashboard()
-  } catch (error: any) {
-    toast.add({ title: 'Erro', description: error.message, color: 'red' })
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Erro ao salvar progresso'
+    toast.add({ title: 'Erro', description: message, color: 'error' })
   } finally {
     savingProgress.value = false
   }
@@ -275,7 +304,7 @@ const saveProgress = async () => {
 
 const loadDashboard = async () => {
   try {
-    dashboard.value = await get('/dashboard')
+    dashboard.value = await get<DashboardResponse>('/dashboard')
   } catch (error) {
     console.error('Error loading dashboard:', error)
   }

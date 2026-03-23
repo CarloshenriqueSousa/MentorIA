@@ -39,7 +39,7 @@
           <UButton
             icon="i-heroicons-trash"
             variant="ghost"
-            color="red"
+              color="error"
             size="xs"
             @click.stop="deleteSession(session.id)"
           />
@@ -57,14 +57,21 @@ const { get, del } = useApi()
 const router = useRouter()
 const toast = useToast()
 
-const sessions = ref<any[]>([])
+type ChatSession = {
+  id: string
+  title: string
+  messageCount: number
+  updatedAt: string
+}
+
+const sessions = ref<ChatSession[]>([])
 const loading = ref(true)
 
 const loadSessions = async () => {
   try {
-    sessions.value = await get('/chat/sessions')
-  } catch (error) {
-    toast.add({ title: 'Erro ao carregar histórico', color: 'red' })
+    sessions.value = await get<ChatSession[]>('/chat/sessions')
+  } catch {
+    toast.add({ title: 'Erro ao carregar histórico', color: 'error' })
   } finally {
     loading.value = false
   }
@@ -78,9 +85,9 @@ const deleteSession = async (sessionId: string) => {
   try {
     await del(`/chat/sessions/${sessionId}`)
     sessions.value = sessions.value.filter(s => s.id !== sessionId)
-    toast.add({ title: 'Conversa excluída', color: 'green' })
-  } catch (error) {
-    toast.add({ title: 'Erro ao excluir', color: 'red' })
+    toast.add({ title: 'Conversa excluída', color: 'success' })
+  } catch {
+    toast.add({ title: 'Erro ao excluir', color: 'error' })
   }
 }
 

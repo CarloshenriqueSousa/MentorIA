@@ -54,7 +54,7 @@
             <UBadge
               v-if="remainingMessages !== null && authStore.user?.planType === 'FREE'"
               :label="`${remainingMessages} msgs restantes`"
-              :color="remainingMessages <= 3 ? 'red' : 'gray'"
+              :color="remainingMessages <= 3 ? 'error' : 'neutral'"
               variant="subtle"
               size="xs"
             />
@@ -80,7 +80,7 @@
               :key="suggestion"
               :label="suggestion"
               variant="outline"
-              color="gray"
+              color="neutral"
               size="xs"
               @click="sendSuggestion(suggestion)"
             />
@@ -144,7 +144,7 @@
           <UIcon name="i-heroicons-exclamation-triangle" class="text-red-500 w-5 h-5 flex-shrink-0" />
           <p class="text-sm text-red-700">Você atingiu o limite diário. Faça upgrade para continuar!</p>
           <NuxtLink to="/pricing" class="ml-auto">
-            <UButton size="xs" label="Fazer upgrade" color="red" />
+            <UButton size="xs" label="Fazer upgrade" color="error" />
           </NuxtLink>
         </div>
       </div>
@@ -190,8 +190,31 @@ const authStore = useAuthStore()
 const { get, post } = useApi()
 const toast = useToast()
 
-const messages = ref<any[]>([])
-const sessions = ref<any[]>([])
+type ChatRole = 'USER' | 'ASSISTANT'
+
+type ChatMessage = {
+  id: number | string
+  role: ChatRole
+  content: string
+  createdAt: string
+}
+
+type ChatSession = {
+  id: string
+  title: string
+  messageCount: number
+  updatedAt: string
+}
+
+type SendMessageResponse = {
+  sessionId: string
+  remainingMessages: number
+  limitReached: boolean
+  assistantMessage: ChatMessage
+}
+
+const messages = ref<ChatMessage[]>([])
+const sessions = ref<ChatSession[]>([])
 const currentSessionId = ref<string | null>(null)
 const inputMessage = ref('')
 const isTyping = ref(false)
@@ -224,7 +247,7 @@ const sendMessage = async () => {
   isTyping.value = true
 
   try {
-    const response = await post<any>('/chat/message', {
+    const response = await post<SendMessageResponse>('/chat/message', {
       content,
       sessionId: currentSessionId.value,
     })
@@ -235,11 +258,12 @@ const sendMessage = async () => {
 
     messages.value.push(response.assistantMessage)
     await loadSessions()
-  } catch (error: any) {
-    if (error.message?.includes('limite')) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : ''
+    if (message.includes('limite')) {
       limitReached.value = true
     } else {
-      toast.add({ title: 'Erro ao enviar mensagem', description: error.message, color: 'red' })
+      toast.add({ title: 'Erro ao enviar mensagem', description: message || 'Erro ao enviar mensagem', color: 'error' })
     }
   } finally {
     isTyping.value = false
@@ -263,8 +287,8 @@ const loadSession = async (sessionId: string) => {
   try {
     messages.value = await get(`/chat/sessions/${sessionId}/messages`)
     scrollToBottom()
-  } catch (error) {
-    toast.add({ title: 'Erro ao carregar conversa', color: 'red' })
+  } catch {
+    toast.add({ title: 'Erro ao carregar conversa', color: 'error' })
   }
 }
 

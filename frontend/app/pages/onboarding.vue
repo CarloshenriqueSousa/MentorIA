@@ -42,7 +42,7 @@
                 :key="exam"
                 :label="exam"
                 variant="outline"
-                color="gray"
+                color="neutral"
                 class="cursor-pointer hover:bg-slate-100"
                 @click="form.targetExam = exam"
               />
@@ -88,7 +88,7 @@
                 v-for="day in days"
                 :key="day.value"
                 :label="day.label"
-                :color="form.availableDays.includes(day.value) ? 'primary' : 'gray'"
+                :color="form.availableDays.includes(day.value) ? 'primary' : 'neutral'"
                 :variant="form.availableDays.includes(day.value) ? 'solid' : 'outline'"
                 class="cursor-pointer"
                 @click="toggleDay(day.value)"
@@ -124,7 +124,7 @@
                 v-for="subject in subjects"
                 :key="subject"
                 :label="subject"
-                :color="form.difficulties.includes(subject) ? 'red' : 'gray'"
+                :color="form.difficulties.includes(subject) ? 'error' : 'neutral'"
                 :variant="form.difficulties.includes(subject) ? 'solid' : 'outline'"
                 class="cursor-pointer"
                 @click="toggleItem(form.difficulties, subject)"
@@ -138,7 +138,7 @@
                 v-for="subject in subjects"
                 :key="subject"
                 :label="subject"
-                :color="form.strengths.includes(subject) ? 'green' : 'gray'"
+                :color="form.strengths.includes(subject) ? 'success' : 'neutral'"
                 :variant="form.strengths.includes(subject) ? 'solid' : 'outline'"
                 class="cursor-pointer"
                 @click="toggleItem(form.strengths, subject)"
@@ -178,7 +178,7 @@
           <UButton
             v-if="currentStep > 1"
             variant="ghost"
-            color="gray"
+            color="neutral"
             label="Voltar"
             icon="i-heroicons-arrow-left"
             @click="currentStep--"
@@ -288,10 +288,11 @@ const submitOnboarding = async () => {
   try {
     await post('/onboarding', form)
     authStore.updateUser({ completedOnboarding: true })
-    toast.add({ title: 'Perfil configurado!', description: 'Bem-vindo ao MentorIA 🎉', color: 'green' })
+    toast.add({ title: 'Perfil configurado!', description: 'Bem-vindo ao MentorIA 🎉', color: 'success' })
     router.push('/dashboard')
-  } catch (error: any) {
-    toast.add({ title: 'Erro', description: error.message, color: 'red' })
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Erro ao enviar onboarding'
+    toast.add({ title: 'Erro', description: message, color: 'error' })
   } finally {
     loading.value = false
   }

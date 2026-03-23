@@ -42,7 +42,7 @@
             <p class="text-sm font-medium text-slate-900 truncate">{{ authStore.user?.name }}</p>
             <UBadge
               :label="authStore.user?.planType"
-              :color="authStore.user?.planType === 'FREE' ? 'gray' : 'primary'"
+              :color="authStore.user?.planType === 'FREE' ? 'neutral' : 'primary'"
               size="xs"
               variant="subtle"
             />
@@ -50,7 +50,7 @@
           <UButton
             icon="i-heroicons-arrow-right-on-rectangle"
             variant="ghost"
-            color="gray"
+            color="neutral"
             size="xs"
             @click="logout"
           />
@@ -72,7 +72,7 @@
         <UButton
           icon="i-heroicons-bars-3"
           variant="ghost"
-          color="gray"
+          color="neutral"
           class="lg:hidden"
           @click="sidebarOpen = !sidebarOpen"
         />
@@ -81,7 +81,7 @@
         <UButton
           icon="i-heroicons-bell"
           variant="ghost"
-          color="gray"
+          color="neutral"
           size="sm"
         />
       </header>

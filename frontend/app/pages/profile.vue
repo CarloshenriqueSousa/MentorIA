@@ -19,7 +19,7 @@
           <p class="text-sm text-slate-500">{{ authStore.user?.email }}</p>
           <UBadge
             :label="authStore.user?.planType"
-            :color="authStore.user?.planType === 'FREE' ? 'gray' : 'primary'"
+            :color="authStore.user?.planType === 'FREE' ? 'neutral' : 'primary'"
             variant="subtle"
             class="mt-1"
           />
@@ -93,7 +93,7 @@
           <p class="text-sm font-medium text-slate-900">Excluir conta</p>
           <p class="text-xs text-slate-500">Esta ação é irreversível</p>
         </div>
-        <UButton label="Excluir conta" color="red" variant="outline" size="sm" />
+        <UButton label="Excluir conta" color="error" variant="outline" size="sm" />
       </div>
     </UCard>
 
@@ -111,7 +111,13 @@ const toast = useToast()
 
 const savingProfile = ref(false)
 const savingPassword = ref(false)
-const studyProfile = ref<any>(null)
+type StudyProfile = {
+  targetExam: string
+  knowledgeLevel: string
+  studyHoursPerDay: number
+}
+
+const studyProfile = ref<StudyProfile | null>(null)
 
 const profileForm = reactive({
   name: authStore.user?.name || '',
@@ -128,7 +134,7 @@ const saveProfile = async () => {
   savingProfile.value = true
   try {
     authStore.updateUser({ name: profileForm.name })
-    toast.add({ title: 'Perfil atualizado!', color: 'green' })
+    toast.add({ title: 'Perfil atualizado!', color: 'success' })
   } finally {
     savingProfile.value = false
   }
@@ -136,12 +142,12 @@ const saveProfile = async () => {
 
 const changePassword = async () => {
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-    toast.add({ title: 'Senhas não coincidem', color: 'red' })
+    toast.add({ title: 'Senhas não coincidem', color: 'error' })
     return
   }
   savingPassword.value = true
   try {
-    toast.add({ title: 'Senha alterada com sucesso!', color: 'green' })
+    toast.add({ title: 'Senha alterada com sucesso!', color: 'success' })
     passwordForm.currentPassword = ''
     passwordForm.newPassword = ''
     passwordForm.confirmPassword = ''
@@ -152,7 +158,9 @@ const changePassword = async () => {
 
 onMounted(async () => {
   try {
-    studyProfile.value = await get('/onboarding')
-  } catch {}
+    studyProfile.value = await get<StudyProfile>('/onboarding')
+  } catch (error) {
+    console.error('Error loading study profile:', error)
+  }
 })
 </script>

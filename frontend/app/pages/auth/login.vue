@@ -41,7 +41,7 @@
       />
     </UForm>
 
-    <UDivider label="ou" class="my-6" />
+<!-- <UDivider label="ou" class="my-6" /> -->
 
     <p class="text-center text-sm text-slate-600">
       Não tem conta?
@@ -54,7 +54,7 @@
 
 <script setup lang="ts">
 import { z } from 'zod'
-import { useAuthStore } from '~/stores/auth'
+import { useAuthStore, type User } from '~/stores/auth'
 
 definePageMeta({ layout: 'auth' })
 
@@ -77,10 +77,16 @@ const form = reactive({
 
 const toast = useToast()
 
+type LoginResponse = {
+  accessToken: string
+  refreshToken: string
+  user: User
+}
+
 const onSubmit = async () => {
   loading.value = true
   try {
-    const response = await post<any>('/auth/login', form)
+    const response = await post<LoginResponse>('/auth/login', form)
     authStore.setAuth(response)
 
     if (!response.user.completedOnboarding) {
@@ -88,11 +94,12 @@ const onSubmit = async () => {
     } else {
       router.push('/dashboard')
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Email ou senha incorretos'
     toast.add({
       title: 'Erro ao entrar',
-      description: error.message || 'Email ou senha incorretos',
-      color: 'red',
+      description: message,
+      color: 'error',
     })
   } finally {
     loading.value = false

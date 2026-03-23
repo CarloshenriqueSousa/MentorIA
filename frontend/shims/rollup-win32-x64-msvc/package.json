@@ -1,0 +1,6 @@
+{
+  "name": "@rollup/rollup-win32-x64-msvc",
+  "version": "4.59.0",
+  "main": "index.js"
+}
+

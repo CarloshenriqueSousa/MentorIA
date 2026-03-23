@@ -69,7 +69,7 @@
 
 <script setup lang="ts">
 import { z } from 'zod'
-import { useAuthStore } from '~/stores/auth'
+import { useAuthStore, type User } from '~/stores/auth'
 
 definePageMeta({ layout: 'auth' })
 
@@ -98,21 +98,28 @@ const form = reactive({
   confirmPassword: '',
 })
 
+type RegisterResponse = {
+  accessToken: string
+  refreshToken: string
+  user: User
+}
+
 const onSubmit = async () => {
   loading.value = true
   try {
-    const response = await post<any>('/auth/register', {
+    const response = await post<RegisterResponse>('/auth/register', {
       name: form.name,
       email: form.email,
       password: form.password,
     })
     authStore.setAuth(response)
     router.push('/onboarding')
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Tente novamente'
     toast.add({
       title: 'Erro ao criar conta',
-      description: error.message || 'Tente novamente',
-      color: 'red',
+      description: message,
+      color: 'error',
     })
   } finally {
     loading.value = false

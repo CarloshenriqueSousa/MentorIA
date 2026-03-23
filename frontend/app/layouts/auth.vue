@@ -18,10 +18,10 @@
 
       <!-- Footer -->
       <p class="text-center text-sm text-slate-500 mt-6">
-        {{ $t('auth.terms_notice') }}
-        <NuxtLink to="/terms" class="text-primary-600 hover:underline">{{ $t('auth.terms') }}</NuxtLink>
+        Ao continuar, você concorda com nossos
+        <NuxtLink to="/terms" class="text-primary-600 hover:underline">Termos de Uso</NuxtLink>
         e
-        <NuxtLink to="/privacy" class="text-primary-600 hover:underline">{{ $t('auth.privacy') }}</NuxtLink>
+        <NuxtLink to="/privacy" class="text-primary-600 hover:underline">Política de Privacidade</NuxtLink>.
       </p>
     </div>
   </div>
