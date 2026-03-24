@@ -104,6 +104,7 @@ const sidebarOpen = ref(false)
 const navItems = computed(() => {
   const items = [
     { to: '/dashboard', icon: 'i-heroicons-squares-2x2', label: 'Dashboard' },
+    { to: '/agents', icon: 'i-heroicons-cpu-chip', label: 'Central de Agentes' },
     ...(authStore.user?.role === 'ADMIN'
       ? [{ to: '/admin', icon: 'i-heroicons-shield-check', label: 'Painel admin' } as const]
       : []),

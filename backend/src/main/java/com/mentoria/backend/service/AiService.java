@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -25,6 +26,23 @@ public class AiService {
 
     public AiService(@Qualifier("aiWebClient") WebClient aiWebClient) {
         this.aiWebClient = aiWebClient;
+    }
+
+    public boolean isHealthy() {
+        try {
+            HttpStatusCode statusCode = aiWebClient.get()
+                    .uri("/health")
+                    .retrieve()
+                    .toBodilessEntity()
+                    .timeout(Duration.ofSeconds(5))
+                    .blockOptional()
+                    .map(entity -> entity.getStatusCode())
+                    .orElse(null);
+            return statusCode != null && statusCode.is2xxSuccessful();
+        } catch (Exception ex) {
+            log.warn("AI Service health check falhou: {}", ex.getMessage());
+            return false;
+        }
     }
 
     public AIResponse generateResponse(

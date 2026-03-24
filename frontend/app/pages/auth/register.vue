@@ -77,6 +77,7 @@ const authStore = useAuthStore()
 const router = useRouter()
 const supabase = useSupabaseClient()
 const { post } = useApi()
+const config = useRuntimeConfig()
 const toast = useToast()
 
 const loading = ref(false)
@@ -108,6 +109,18 @@ type SessionResponse = {
 const onSubmit = async () => {
   loading.value = true
   try {
+    const supabaseUrl = String(config.public.supabaseUrl || '').trim()
+    const supabaseKey = String(config.public.supabaseKey || '').trim()
+    const supabaseConfigured =
+      supabaseUrl.length > 0
+      && supabaseKey.length > 0
+      && !supabaseUrl.includes('SEU_REF')
+      && !supabaseKey.includes('SUA_CHAVE')
+
+    if (!supabaseConfigured) {
+      throw new Error('Supabase não configurado. Preencha SUPABASE_URL e SUPABASE_KEY no .env/.env do frontend.')
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email: form.email.trim().toLowerCase(),
       password: form.password,
