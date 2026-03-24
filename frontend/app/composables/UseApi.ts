@@ -1,5 +1,22 @@
 import { useAuthStore } from '~/stores/auth'
 
+async function tryRefreshSupabaseSession(authStore: ReturnType<typeof useAuthStore>): Promise<boolean> {
+  if (!import.meta.client) {
+    return false
+  }
+  try {
+    const supabase = useSupabaseClient()
+    const { data, error } = await supabase.auth.refreshSession()
+    if (error || !data.session) {
+      return false
+    }
+    authStore.patchTokens(data.session.access_token, data.session.refresh_token)
+    return true
+  } catch {
+    return false
+  }
+}
+
 export const useApi = () => {
   const config = useRuntimeConfig()
   const authStore = useAuthStore()
@@ -7,7 +24,8 @@ export const useApi = () => {
 
   const request = async <T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    isRetry = false,
   ): Promise<T> => {
     const url = `${config.public.apiBase}${endpoint}`
 
@@ -25,17 +43,29 @@ export const useApi = () => {
       headers,
     })
 
-    // Token expirado — redireciona para login
-    if (response.status === 401) {
+    if (response.status === 401 && !isRetry && import.meta.client) {
+      const refreshed = await tryRefreshSupabaseSession(authStore)
+      if (refreshed) {
+        return request<T>(endpoint, options, true)
+      }
       authStore.logout()
-      router.push('/auth/login')
+      await router.push('/auth/login')
       throw new Error('Sessão expirada')
     }
 
-    const data = await response.json()
+    const text = await response.text()
+    let data: { data?: T; error?: string; message?: string }
+    try {
+      data = text ? (JSON.parse(text) as typeof data) : {}
+    } catch {
+      if (!response.ok) {
+        throw new Error(response.statusText || 'Erro na requisição')
+      }
+      throw new Error('Resposta inválida do servidor')
+    }
 
     if (!response.ok) {
-      throw new Error(data.error || 'Erro na requisição')
+      throw new Error(data.error || data.message || 'Erro na requisição')
     }
 
     return data.data as T

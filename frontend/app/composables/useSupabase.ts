@@ -1,19 +1,14 @@
-import { createClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
-let cachedClient: ReturnType<typeof createClient> | null = null
-
-export const useSupabase = () => {
-  const config = useRuntimeConfig()
-  const supabaseUrl = config.public.supabaseUrl as string
-  const supabaseKey = config.public.supabaseKey as string
-
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Supabase não configurado. Defina NUXT_PUBLIC_SUPABASE_URL e NUXT_PUBLIC_SUPABASE_KEY.')
-  }
-
-  if (!cachedClient) {
-    cachedClient = createClient(supabaseUrl, supabaseKey)
-  }
-
-  return cachedClient
+/**
+ * Cliente Supabase via módulo oficial `@nuxtjs/supabase`.
+ *
+ * Defina no `frontend/.env`:
+ * - `SUPABASE_URL`
+ * - `SUPABASE_KEY` (chave publishable / anon — nunca service_role no browser)
+ *
+ * Em código novo, pode usar diretamente `useSupabaseClient()` (auto-import).
+ */
+export const useSupabase = (): SupabaseClient => {
+  return useSupabaseClient()
 }

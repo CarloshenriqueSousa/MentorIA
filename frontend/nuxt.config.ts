@@ -1,3 +1,12 @@
+import { config as loadEnv } from 'dotenv'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+// Usa o `.env` da raiz do repositório (mesmo do Docker/Spring) + `frontend/.env` opcional
+const __dirname = dirname(fileURLToPath(import.meta.url))
+loadEnv({ path: resolve(__dirname, '..', '.env') })
+loadEnv({ path: resolve(__dirname, '.env'), override: true })
+
 export default defineNuxtConfig({
   typescript: {
     tsConfig: {
@@ -9,19 +18,34 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
   devtools: { enabled: true },
 
+  // 3000 costuma estar ocupado (ex.: Obsidian); use sempre http://localhost:3001 para o app
+  devServer: {
+    port: 3001,
+    host: 'localhost',
+  },
+
   modules: [
     '@nuxt/ui',
     '@pinia/nuxt',
+    '@nuxtjs/supabase',
   ],
+
+  // Login continua no backend Spring; Supabase fica disponível para Auth/Storage/Realtime quando quiser.
+  supabase: {
+    redirect: false,
+    // Gere `app/types/database.types.ts` com `supabase gen types` se quiser tipagem do schema.
+    types: false,
+  },
 
   css: ['~/assets/css/main.css'],
 
   runtimeConfig: {
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8080/api',
+      // Aliases legados (o módulo @nuxtjs/supabase usa runtimeConfig.public.supabase.* via SUPABASE_URL / SUPABASE_KEY)
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '',
       supabaseKey: process.env.NUXT_PUBLIC_SUPABASE_KEY || process.env.SUPABASE_KEY || '',
-    }
+    },
   },
 
   routeRules: {

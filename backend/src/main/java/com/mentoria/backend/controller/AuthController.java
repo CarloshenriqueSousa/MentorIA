@@ -2,6 +2,7 @@ package com.mentoria.backend.controller;
 
 import com.mentoria.backend.dto.request.LoginRequest;
 import com.mentoria.backend.dto.request.RegisterRequest;
+import com.mentoria.backend.dto.request.SupabaseSessionRequest;
 import com.mentoria.backend.dto.response.ApiResponse;
 import com.mentoria.backend.dto.response.AuthResponse;
 import com.mentoria.backend.service.AuthService;
@@ -31,6 +32,19 @@ public class AuthController {
             @Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(ApiResponse.ok("Login realizado", response));
+    }
+
+    /**
+     * Após {@code signInWithPassword} / {@code signUp} no cliente Supabase, chame este endpoint com os tokens da sessão.
+     */
+    @PostMapping("/supabase/session")
+    public ResponseEntity<ApiResponse<AuthResponse>> supabaseSession(
+            @Valid @RequestBody SupabaseSessionRequest request) {
+        AuthResponse response = authService.syncSupabaseSession(
+                request.getAccessToken(),
+                request.getRefreshToken()
+        );
+        return ResponseEntity.ok(ApiResponse.ok("Sessão sincronizada", response));
     }
 
     @PostMapping("/refresh")

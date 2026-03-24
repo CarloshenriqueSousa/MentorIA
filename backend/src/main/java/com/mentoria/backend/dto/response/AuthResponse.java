@@ -1,6 +1,7 @@
 package com.mentoria.backend.dto.response;
 
 import com.mentoria.backend.model.User;
+import com.mentoria.backend.model.UserRole;
 import lombok.Builder;
 import lombok.Data;
 
@@ -24,6 +25,7 @@ public class AuthResponse {
         private String name;
         private String email;
         private User.PlanType planType;
+        private UserRole role;
         private boolean completedOnboarding;
         private LocalDateTime createdAt;
     }

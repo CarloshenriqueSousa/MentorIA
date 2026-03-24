@@ -26,10 +26,11 @@ services:
     ports:
       - "8080:8080"
     environment:
-
-      DATABASE_URL: ${DATABASE_URL:-jdbc:postgresql://db:5432/mentoria}
-      DATABASE_USER: ${DATABASE_USER:-mentoria}
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-mentoria}
+      # Sempre Postgres local (serviço `db`). Para Supabase remoto use `docker-compose.supabase.yml`.
+      DATABASE_URL: jdbc:postgresql://db:5432/mentoria
+      DATABASE_USER: mentoria
+      DATABASE_PASSWORD: mentoria
+      JAVA_TOOL_OPTIONS: -Djava.net.preferIPv4Stack=true
       JWT_SECRET: ${JWT_SECRET}
       AI_SERVICE_URL: http://ai-service:8000
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
@@ -37,6 +38,10 @@ services:
       STRIPE_PRICE_BASIC: ${STRIPE_PRICE_BASIC}
       STRIPE_PRICE_PREMIUM: ${STRIPE_PRICE_PREMIUM}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      SUPABASE_URL: ${SUPABASE_URL:-}
+      SUPABASE_KEY: ${SUPABASE_KEY:-}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+      SUPABASE_JWT_SECRET: ${SUPABASE_JWT_SECRET:-}
     depends_on:
       ai-service:
         condition: service_healthy

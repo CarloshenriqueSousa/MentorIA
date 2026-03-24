@@ -1,0 +1,5 @@
+# Produção: não criar usuário de teste nem expor credenciais padrão
+app:
+  seed:
+    test-user:
+      enabled: false

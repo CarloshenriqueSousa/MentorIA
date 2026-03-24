@@ -22,16 +22,30 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
+    /**
+     * Null para contas criadas só via Supabase Auth (senha fica no Supabase).
+     */
+    @Column(name = "password_hash")
     private String passwordHash;
 
     @Column(nullable = false)
     private String name;
 
+    /**
+     * UUID do usuário em {@code auth.users} (Supabase). Opcional para contas legadas só com senha local.
+     */
+    @Column(name = "supabase_user_id", unique = true)
+    private UUID supabaseUserId;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "plan_type", nullable = false)
     @Builder.Default
     private PlanType planType = PlanType.FREE;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    @Builder.Default
+    private UserRole role = UserRole.USER;
 
     @Column(name = "is_active", nullable = false)
     @Builder.Default
@@ -56,5 +70,13 @@ public class User {
 
     public enum PlanType {
         FREE, BASIC, PREMIUM
+    }
+
+    @PrePersist
+    @PreUpdate
+    void normalizeRole() {
+        if (role == null) {
+            role = UserRole.USER;
+        }
     }
 }

@@ -12,8 +12,13 @@ export default defineNuxtRouteMiddleware((to) => {
     return navigateTo('/auth/login')
   }
 
-  // Logado mas sem onboarding
-  if (authStore.isLoggedIn && authStore.needsOnboarding && to.path !== '/onboarding') {
+  // Logado mas sem onboarding (admins podem acessar /admin para operar o painel)
+  if (
+    authStore.isLoggedIn
+    && authStore.needsOnboarding
+    && to.path !== '/onboarding'
+    && !(authStore.user?.role === 'ADMIN' && to.path.startsWith('/admin'))
+  ) {
     return navigateTo('/onboarding')
   }
 

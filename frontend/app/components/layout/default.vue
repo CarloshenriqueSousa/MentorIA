@@ -101,17 +101,26 @@ const authStore = useAuthStore()
 const router = useRouter()
 const sidebarOpen = ref(false)
 
-const navItems = [
-  { to: '/dashboard', icon: 'i-heroicons-squares-2x2', label: 'Dashboard' },
-  { to: '/chat', icon: 'i-heroicons-chat-bubble-left-right', label: 'Chat com Mentor' },
-  { to: '/chat/history', icon: 'i-heroicons-clock', label: 'Histórico' },
-  { to: '/study-plan', icon: 'i-heroicons-book-open', label: 'Plano de Estudos' },
-  { to: '/profile', icon: 'i-heroicons-user', label: 'Perfil' },
-  { to: '/settings', icon: 'i-heroicons-cog-6-tooth', label: 'Configurações' },
-  { to: '/pricing', icon: 'i-heroicons-star', label: 'Upgrade' },
-]
+const navItems = computed(() => {
+  const items = [
+    { to: '/dashboard', icon: 'i-heroicons-squares-2x2', label: 'Dashboard' },
+    ...(authStore.user?.role === 'ADMIN'
+      ? [{ to: '/admin', icon: 'i-heroicons-shield-check', label: 'Painel admin' } as const]
+      : []),
+    { to: '/chat', icon: 'i-heroicons-chat-bubble-left-right', label: 'Chat com Mentor' },
+    { to: '/chat/history', icon: 'i-heroicons-clock', label: 'Histórico' },
+    { to: '/study-plan', icon: 'i-heroicons-book-open', label: 'Plano de Estudos' },
+    { to: '/profile', icon: 'i-heroicons-user', label: 'Perfil' },
+    { to: '/settings', icon: 'i-heroicons-cog-6-tooth', label: 'Configurações' },
+    { to: '/pricing', icon: 'i-heroicons-star', label: 'Upgrade' },
+  ]
+  return items
+})
 
-const logout = () => {
+const supabase = useSupabaseClient()
+
+const logout = async () => {
+  await supabase.auth.signOut()
   authStore.logout()
   router.push('/auth/login')
 }

@@ -29,6 +29,12 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
+    @ExceptionHandler(ApiUnauthorizedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleUnauthorized(ApiUnauthorizedException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
     @ExceptionHandler(RateLimitException.class)
     public ResponseEntity<ApiResponse<Map<String, Object>>> handleRateLimit(RateLimitException ex) {
         Map<String, Object> data = Map.of(

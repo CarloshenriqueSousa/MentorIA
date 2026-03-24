@@ -5,6 +5,8 @@ export interface User {
   name: string
   email: string
   planType: 'FREE' | 'BASIC' | 'PREMIUM'
+  /** USER | ADMIN — ausente em sessões antigas no localStorage */
+  role?: 'USER' | 'ADMIN'
   completedOnboarding: boolean
 }
 
@@ -24,6 +26,7 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     isLoggedIn: (state) => !!state.accessToken,
     isPaid: (state) => state.user?.planType !== 'FREE',
+    isAdmin: (state) => state.user?.role === 'ADMIN',
     needsOnboarding: (state) => state.user && !state.user.completedOnboarding,
   },
 
@@ -33,11 +36,24 @@ export const useAuthStore = defineStore('auth', {
       this.refreshToken = data.refreshToken
       this.user = data.user
 
-      // Persistir no localStorage
       if (import.meta.client) {
         localStorage.setItem('access_token', data.accessToken)
         localStorage.setItem('refresh_token', data.refreshToken)
         localStorage.setItem('user', JSON.stringify(data.user))
+      }
+    },
+
+    /** Atualiza só tokens (ex.: refresh da sessão Supabase). */
+    patchTokens(accessToken: string, refreshToken?: string | null) {
+      this.accessToken = accessToken
+      if (refreshToken) {
+        this.refreshToken = refreshToken
+      }
+      if (import.meta.client) {
+        localStorage.setItem('access_token', accessToken)
+        if (refreshToken) {
+          localStorage.setItem('refresh_token', refreshToken)
+        }
       }
     },
 
@@ -74,6 +90,6 @@ export const useAuthStore = defineStore('auth', {
           localStorage.setItem('user', JSON.stringify(this.user))
         }
       }
-    }
-  }
+    },
+  },
 })

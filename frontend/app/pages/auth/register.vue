@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2 class="text-2xl font-bold text-slate-900 mb-1">Criar conta grátis</h2>
-    <p class="text-slate-500 mb-8">Comece a estudar com seu mentor IA hoje</p>
+    <p class="text-slate-500 mb-8">Conta criada com Supabase Auth</p>
 
     <UForm :schema="schema" :state="form" class="space-y-4" @submit="onSubmit">
       <UFormField label="Nome completo" name="name">
@@ -75,6 +75,7 @@ definePageMeta({ layout: 'auth' })
 
 const authStore = useAuthStore()
 const router = useRouter()
+const supabase = useSupabaseClient()
 const { post } = useApi()
 const toast = useToast()
 
@@ -98,7 +99,7 @@ const form = reactive({
   confirmPassword: '',
 })
 
-type RegisterResponse = {
+type SessionResponse = {
   accessToken: string
   refreshToken: string
   user: User
@@ -107,11 +108,34 @@ type RegisterResponse = {
 const onSubmit = async () => {
   loading.value = true
   try {
-    const response = await post<RegisterResponse>('/auth/register', {
-      name: form.name,
-      email: form.email,
+    const { data, error } = await supabase.auth.signUp({
+      email: form.email.trim().toLowerCase(),
       password: form.password,
+      options: {
+        data: {
+          full_name: form.name.trim(),
+        },
+      },
     })
+
+    if (error) {
+      throw new Error(error.message)
+    }
+
+    if (!data.session) {
+      toast.add({
+        title: 'Confirme seu email',
+        description: 'Enviamos um link de confirmação. Depois disso você poderá entrar.',
+        color: 'info',
+      })
+      return
+    }
+
+    const response = await post<SessionResponse>('/auth/supabase/session', {
+      accessToken: data.session.access_token,
+      refreshToken: data.session.refresh_token,
+    })
+
     authStore.setAuth(response)
     router.push('/onboarding')
   } catch (error: unknown) {

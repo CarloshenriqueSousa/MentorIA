@@ -1,5 +1,7 @@
 package com.mentoria.backend.security;
 
+import com.mentoria.backend.service.SupabaseUserProvisioningService;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,6 +18,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -23,6 +26,8 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final SupabaseJwtService supabaseJwtService;
+    private final SupabaseUserProvisioningService supabaseUserProvisioningService;
     private final UserDetailsServiceImpl userDetailsService;
 
     @Override
@@ -40,6 +45,51 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         try {
+            if (tryAuthenticateWithSupabase(token, request)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            if (tryAuthenticateWithLegacyJwt(token, request)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+        } catch (Exception e) {
+            log.warn("JWT validation failed: {}", e.getMessage());
+        }
+
+        filterChain.doFilter(request, response);
+    }
+
+    private boolean tryAuthenticateWithSupabase(String token, HttpServletRequest request) {
+        Optional<Claims> claimsOpt = supabaseJwtService.tryParseValidClaims(token);
+        if (claimsOpt.isEmpty()) {
+            return false;
+        }
+        Claims claims = claimsOpt.get();
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
+            return true;
+        }
+
+        supabaseUserProvisioningService.ensureLocalUserFromSupabaseClaims(claims);
+        String email = claims.get("email", String.class);
+        if (email == null || email.isBlank()) {
+            return false;
+        }
+        email = email.toLowerCase().trim();
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+        UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities()
+                );
+        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+        return true;
+    }
+
+    private boolean tryAuthenticateWithLegacyJwt(String token, HttpServletRequest request) {
+        try {
             final String userEmail = jwtTokenProvider.extractUsername(token);
 
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -52,13 +102,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    return true;
                 }
             }
-        } catch (Exception e) {
-            log.warn("JWT validation failed: {}", e.getMessage());
+        } catch (Exception ignored) {
+            // token não é JWT legado válido
         }
-
-        filterChain.doFilter(request, response);
+        return false;
     }
 
     private String extractToken(HttpServletRequest request) {

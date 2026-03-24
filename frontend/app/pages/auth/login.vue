@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2 class="text-2xl font-bold text-slate-900 mb-1">Bem-vindo de volta</h2>
-    <p class="text-slate-500 mb-8">Entre na sua conta para continuar estudando</p>
+    <p class="text-slate-500 mb-8">Entre com email e senha (Supabase Auth)</p>
 
     <UForm :schema="schema" :state="form" class="space-y-4" @submit="onSubmit">
       <UFormField label="Email" name="email">
@@ -41,9 +41,48 @@
       />
     </UForm>
 
-<!-- <UDivider label="ou" class="my-6" /> -->
+    <UCard class="mt-10" :ui="{ body: { padding: 'p-4 sm:p-5' } }">
+      <template #header>
+        <h3 class="text-sm font-semibold text-slate-800">
+          Conta local (desenvolvimento / teste)
+        </h3>
+      </template>
+      <p class="text-xs text-slate-500 mb-4">
+        Backend Spring (<code class="text-primary-600">POST /auth/login</code>). Conta padrão:
+        <strong>teste@gmail.com</strong> / <strong>teste123</strong> (seed no backend).
+      </p>
+      <UForm :schema="localSchema" :state="localForm" class="space-y-4" @submit="onSubmitLocal">
+        <UFormField label="Email" name="email">
+          <UInput
+            v-model="localForm.email"
+            type="email"
+            placeholder="teste@gmail.com"
+            icon="i-heroicons-envelope"
+            size="md"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="Senha" name="password">
+          <UInput
+            v-model="localForm.password"
+            type="password"
+            placeholder="teste123"
+            icon="i-heroicons-lock-closed"
+            size="md"
+            class="w-full"
+          />
+        </UFormField>
+        <UButton
+          type="submit"
+          block
+          label="Entrar com conta local"
+          color="neutral"
+          :loading="loadingLocal"
+        />
+      </UForm>
+    </UCard>
 
-    <p class="text-center text-sm text-slate-600">
+    <p class="text-center text-sm text-slate-600 mt-6">
       Não tem conta?
       <NuxtLink to="/auth/register" class="text-primary-600 font-medium hover:underline">
         Criar conta grátis
@@ -60,9 +99,11 @@ definePageMeta({ layout: 'auth' })
 
 const authStore = useAuthStore()
 const router = useRouter()
+const supabase = useSupabaseClient()
 const { post } = useApi()
 
 const loading = ref(false)
+const loadingLocal = ref(false)
 const showPassword = ref(false)
 
 const schema = z.object({
@@ -70,14 +111,24 @@ const schema = z.object({
   password: z.string().min(8, 'Senha deve ter pelo menos 8 caracteres'),
 })
 
+const localSchema = z.object({
+  email: z.string().email('Email inválido'),
+  password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
+})
+
 const form = reactive({
   email: '',
   password: '',
 })
 
+const localForm = reactive({
+  email: 'teste@gmail.com',
+  password: '',
+})
+
 const toast = useToast()
 
-type LoginResponse = {
+type SessionResponse = {
   accessToken: string
   refreshToken: string
   user: User
@@ -86,7 +137,23 @@ type LoginResponse = {
 const onSubmit = async () => {
   loading.value = true
   try {
-    const response = await post<LoginResponse>('/auth/login', form)
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: form.email.trim().toLowerCase(),
+      password: form.password,
+    })
+
+    if (error) {
+      throw new Error(error.message)
+    }
+    if (!data.session) {
+      throw new Error('Sessão não retornada. Confirme seu email se o projeto exigir verificação.')
+    }
+
+    const response = await post<SessionResponse>('/auth/supabase/session', {
+      accessToken: data.session.access_token,
+      refreshToken: data.session.refresh_token,
+    })
+
     authStore.setAuth(response)
 
     if (!response.user.completedOnboarding) {
@@ -103,6 +170,35 @@ const onSubmit = async () => {
     })
   } finally {
     loading.value = false
+  }
+}
+
+const onSubmitLocal = async () => {
+  loadingLocal.value = true
+  try {
+    const response = await post<SessionResponse>('/auth/login', {
+      email: localForm.email.trim().toLowerCase(),
+      password: localForm.password,
+    })
+
+    authStore.setAuth(response)
+
+    if (response.user.role === 'ADMIN') {
+      await router.push('/admin')
+    } else if (!response.user.completedOnboarding) {
+      await router.push('/onboarding')
+    } else {
+      await router.push('/dashboard')
+    }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Falha no login local'
+    toast.add({
+      title: 'Login local',
+      description: message,
+      color: 'error',
+    })
+  } finally {
+    loadingLocal.value = false
   }
 }
 </script>

@@ -3,12 +3,16 @@ package com.mentoria.backend.service;
 import com.mentoria.backend.dto.request.LoginRequest;
 import com.mentoria.backend.dto.request.RegisterRequest;
 import com.mentoria.backend.dto.response.AuthResponse;
+import com.mentoria.backend.exception.ApiUnauthorizedException;
 import com.mentoria.backend.exception.BusinessException;
 import com.mentoria.backend.model.User;
+import com.mentoria.backend.model.UserRole;
 import com.mentoria.backend.model.UserProfile;
 import com.mentoria.backend.repository.UserProfileRepository;
 import com.mentoria.backend.repository.UserRepository;
 import com.mentoria.backend.security.JwtTokenProvider;
+import com.mentoria.backend.security.SupabaseJwtService;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -33,6 +37,8 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserDetailsService userDetailsService;
+    private final SupabaseJwtService supabaseJwtService;
+    private final SupabaseUserProvisioningService supabaseUserProvisioningService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -45,6 +51,7 @@ public class AuthService {
                 .email(request.getEmail().toLowerCase().trim())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .planType(User.PlanType.FREE)
+                .role(UserRole.USER)
                 .build();
 
         user = userRepository.save(user);
@@ -81,6 +88,49 @@ public class AuthService {
         return buildAuthResponse(user, completedOnboarding);
     }
 
+    /**
+     * Valida o access token do Supabase, garante linha em {@code users} / perfil e devolve o mesmo par de tokens + resumo do usuário.
+     */
+    @Transactional
+    public AuthResponse syncSupabaseSession(String accessToken, String refreshToken) {
+        if (!supabaseJwtService.isConfigured()) {
+            throw new ApiUnauthorizedException(
+                    "Backend sem SUPABASE_JWT_SECRET. Copie o JWT Secret em Supabase → Settings → API."
+            );
+        }
+        Claims claims = supabaseJwtService.tryParseValidClaims(accessToken)
+                .orElseThrow(() -> new ApiUnauthorizedException("Token Supabase inválido ou expirado"));
+
+        User user = supabaseUserProvisioningService.ensureLocalUserFromSupabaseClaims(claims);
+
+        boolean completedOnboarding = profileRepository.findByUser_Id(user.getId())
+                .map(UserProfile::isCompletedOnboarding)
+                .orElse(false);
+
+        long expiresIn = Math.max(
+                60L,
+                (claims.getExpiration().getTime() - System.currentTimeMillis()) / 1000L
+        );
+
+        String refresh = refreshToken != null ? refreshToken : "";
+
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refresh)
+                .tokenType("Bearer")
+                .expiresIn(expiresIn)
+                .user(AuthResponse.UserSummary.builder()
+                        .id(user.getId())
+                        .name(user.getName())
+                        .email(user.getEmail())
+                        .planType(user.getPlanType())
+                        .role(user.getRole())
+                        .completedOnboarding(completedOnboarding)
+                        .createdAt(user.getCreatedAt())
+                        .build())
+                .build();
+    }
+
     public AuthResponse refreshToken(String refreshToken) {
         String email = jwtTokenProvider.extractUsername(refreshToken);
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
@@ -114,6 +164,7 @@ public class AuthService {
                         .name(user.getName())
                         .email(user.getEmail())
                         .planType(user.getPlanType())
+                        .role(user.getRole())
                         .completedOnboarding(completedOnboarding)
                         .createdAt(user.getCreatedAt())
                         .build())
