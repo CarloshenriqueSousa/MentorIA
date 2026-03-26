@@ -11,7 +11,16 @@
       <template #header>
         <h2 class="font-semibold text-slate-900">Notificações</h2>
       </template>
-      <div class="space-y-4">
+      <div v-if="loading" class="space-y-4">
+        <div v-for="i in 3" :key="i" class="flex items-center justify-between">
+          <div class="space-y-2">
+            <USkeleton class="h-4 w-32" />
+            <USkeleton class="h-3 w-48" />
+          </div>
+          <USkeleton class="h-6 w-10 rounded-full" />
+        </div>
+      </div>
+      <div v-else class="space-y-4">
         <div v-for="item in notifications" :key="item.key" class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-slate-900">{{ item.label }}</p>
@@ -33,6 +42,7 @@
             v-model="settings.language"
             :options="languages"
             class="w-full"
+            :loading="loading"
           />
         </UFormField>
       </div>
@@ -45,13 +55,14 @@
       </template>
       <div class="space-y-4">
         <UFormField label="Meta diária de estudo (minutos)">
-          <UInput v-model="settings.dailyGoalMinutes" type="number" min="15" max="720" />
+          <UInput v-model="settings.dailyGoalMinutes" type="number" min="15" max="720" :disabled="loading" />
         </UFormField>
         <UFormField label="Estilo de resposta do mentor">
           <USelect
             v-model="settings.mentorStyle"
             :options="mentorStyles"
             class="w-full"
+            :loading="loading"
           />
         </UFormField>
       </div>
@@ -79,7 +90,7 @@
       </div>
     </UCard>
 
-    <UButton label="Salvar configurações" :loading="saving" @click="saveSettings" />
+    <UButton label="Salvar configurações" :loading="saving" :disabled="loading" @click="saveSettings" />
 
   </div>
 </template>
@@ -90,8 +101,10 @@ import { useAuthStore } from '~/stores/auth'
 definePageMeta({ layout: 'default', middleware: 'auth' })
 
 const authStore = useAuthStore()
+const { get, put } = useApi()
 const toast = useToast()
 const saving = ref(false)
+const loading = ref(true)
 
 const notifications = reactive([
   { key: 'daily_reminder', label: 'Lembrete diário', description: 'Receba um lembrete para estudar todo dia', enabled: true },
@@ -102,7 +115,7 @@ const notifications = reactive([
 const settings = reactive({
   language: 'pt-BR',
   dailyGoalMinutes: 120,
-  mentorStyle: 'balanced',
+  mentorStyle: 'BALANCED',
 })
 
 const languages = [
@@ -111,16 +124,63 @@ const languages = [
 ]
 
 const mentorStyles = [
-  { label: 'Equilibrado', value: 'balanced' },
-  { label: 'Detalhado e explicativo', value: 'detailed' },
-  { label: 'Direto e objetivo', value: 'direct' },
-  { label: 'Encorajador e motivador', value: 'encouraging' },
+  { label: 'Equilibrado', value: 'BALANCED' },
+  { label: 'Detalhado e explicativo', value: 'DETAILED' },
+  { label: 'Direto e objetivo', value: 'DIRECT' },
+  { label: 'Encorajador e motivador', value: 'ENCOURAGING' },
 ]
+
+const loadSettings = async () => {
+  loading.value = true
+  try {
+    const profile = await get<any>('/onboarding')
+    if (profile) {
+      settings.dailyGoalMinutes = profile.dailyGoalMinutes || 120
+      settings.mentorStyle = profile.mentorStyle || 'BALANCED'
+      
+      const extra = profile.extraInfo || {}
+      if (extra.language) settings.language = extra.language
+      if (extra.notifications) {
+        notifications.forEach(n => {
+          if (extra.notifications[n.key] !== undefined) {
+            n.enabled = extra.notifications[n.key]
+          }
+        })
+      }
+    }
+  } catch (error) {
+    console.error('Error loading settings:', error)
+  } finally {
+    loading.value = false
+  }
+}
 
 const saveSettings = async () => {
   saving.value = true
-  await new Promise(r => setTimeout(r, 800))
-  toast.add({ title: 'Configurações salvas!', color: 'success' })
-  saving.value = false
+  try {
+    const notificationMap = notifications.reduce((acc, n) => {
+      acc[n.key] = n.enabled
+      return acc
+    }, {} as Record<string, boolean>)
+
+    await put('/users/settings', {
+      language: settings.language,
+      dailyGoalMinutes: settings.dailyGoalMinutes,
+      mentorStyle: settings.mentorStyle,
+      notifications: notificationMap
+    })
+
+    toast.add({ title: 'Configurações salvas!', color: 'success' })
+  } catch (error: any) {
+    toast.add({ 
+      title: 'Erro ao salvar configurações', 
+      description: error.message || 'Erro desconhecido', 
+      color: 'error' 
+    })
+  } finally {
+    saving.value = false
+  }
 }
+
+onMounted(loadSettings)
 </script>

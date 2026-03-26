@@ -106,7 +106,7 @@ import { useAuthStore } from '~/stores/auth'
 definePageMeta({ layout: 'default', middleware: 'auth' })
 
 const authStore = useAuthStore()
-const { get } = useApi()
+const { get, put } = useApi()
 const toast = useToast()
 
 const savingProfile = ref(false)
@@ -133,8 +133,15 @@ const passwordForm = reactive({
 const saveProfile = async () => {
   savingProfile.value = true
   try {
+    await put('/users/profile', { name: profileForm.name })
     authStore.updateUser({ name: profileForm.name })
     toast.add({ title: 'Perfil atualizado!', color: 'success' })
+  } catch (error: any) {
+    toast.add({ 
+      title: 'Erro ao atualizar perfil', 
+      description: error.message || 'Erro desconhecido', 
+      color: 'error' 
+    })
   } finally {
     savingProfile.value = false
   }
@@ -147,10 +154,21 @@ const changePassword = async () => {
   }
   savingPassword.value = true
   try {
+    await put('/users/password', {
+      currentPassword: passwordForm.currentPassword,
+      newPassword: passwordForm.newPassword,
+      confirmPassword: passwordForm.confirmPassword
+    })
     toast.add({ title: 'Senha alterada com sucesso!', color: 'success' })
     passwordForm.currentPassword = ''
     passwordForm.newPassword = ''
     passwordForm.confirmPassword = ''
+  } catch (error: any) {
+    toast.add({ 
+      title: 'Erro ao alterar senha', 
+      description: error.message || 'Verifique sua senha atual', 
+      color: 'error' 
+    })
   } finally {
     savingPassword.value = false
   }

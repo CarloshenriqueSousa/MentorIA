@@ -48,7 +48,9 @@
           </div>
           <div>
             <p class="font-semibold text-slate-900 text-sm">MentorIA</p>
-            <p class="text-xs text-green-500">● Online</p>
+            <p :class="connected ? 'text-green-500' : 'text-red-500'" class="text-xs">
+              ● {{ connected ? 'Conectado' : 'Desconectado' }}
+            </p>
           </div>
           <div class="ml-auto flex items-center gap-2">
             <UBadge
@@ -107,12 +109,14 @@
 
           <!-- Conteúdo -->
           <div
-            class="max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed"
+            class="max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed markdown-content"
             :class="msg.role === 'USER'
               ? 'bg-primary-600 text-white rounded-tr-sm'
-              : 'bg-slate-100 text-slate-800 rounded-tl-sm'"
+              : 'bg-slate-100 text-slate-800 rounded-tl-sm shadow-sm'"
           >
-            <p class="whitespace-pre-wrap">{{ msg.content }}</p>
+            <div v-if="msg.role === 'ASSISTANT'" v-html="renderMarkdown(msg.content)" />
+            <p v-else class="whitespace-pre-wrap">{{ msg.content }}</p>
+            
             <p
               class="text-xs mt-1 opacity-60"
               :class="msg.role === 'USER' ? 'text-right' : ''"
@@ -159,13 +163,13 @@
             autoresize
             :maxrows="5"
             class="flex-1"
-            :disabled="limitReached || isTyping"
+            :disabled="limitReached || isTyping || !connected"
             @keydown.enter.exact.prevent="sendMessage"
           />
           <UButton
             icon="i-heroicons-paper-airplane"
             :loading="isTyping"
-            :disabled="!inputMessage.trim() || limitReached"
+            :disabled="!inputMessage.trim() || limitReached || !connected"
             @click="sendMessage"
           />
         </div>
@@ -180,6 +184,9 @@
 
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth'
+import SockJS from 'sockjs-client'
+import Stomp from 'stompjs'
+import MarkdownIt from 'markdown-it'
 
 definePageMeta({
   layout: 'default',
@@ -187,8 +194,13 @@ definePageMeta({
 })
 
 const authStore = useAuthStore()
-const { get, post } = useApi()
+const { get, post, apiBase } = useApi()
 const toast = useToast()
+const md = new MarkdownIt({
+  html: true,
+  linkify: true,
+  typographer: true
+})
 
 type ChatRole = 'USER' | 'ASSISTANT'
 
@@ -221,6 +233,8 @@ const isTyping = ref(false)
 const limitReached = ref(false)
 const remainingMessages = ref<number | null>(null)
 const messagesContainer = ref<HTMLElement | null>(null)
+const connected = ref(false)
+let stompClient: any = null
 
 const suggestions = [
   'Me explica raciocínio lógico',
@@ -229,15 +243,59 @@ const suggestions = [
   'Crie um resumo sobre direito administrativo',
 ]
 
+const renderMarkdown = (content: string) => {
+  return md.render(content)
+}
+
+const connectWebSocket = () => {
+  const socket = new SockJS(apiBase + '/ws')
+  stompClient = Stomp.over(socket)
+  stompClient.debug = () => {} // Disable debug logs
+
+  stompClient.connect({}, (frame: any) => {
+    connected.value = true
+    console.log('Connected: ' + frame)
+    
+    if (currentSessionId.value) {
+      subscribeToSession(currentSessionId.value)
+    }
+  }, (error: any) => {
+    connected.value = false
+    console.error('STOMP error:', error)
+    setTimeout(connectWebSocket, 5000) // Retry
+  })
+}
+
+const subscribeToSession = (sessionId: string) => {
+  if (stompClient && stompClient.connected) {
+    stompClient.subscribe('/topic/chat/' + sessionId, (message: any) => {
+      const response = JSON.parse(message.body) as SendMessageResponse
+      
+      // Update session info
+      remainingMessages.value = response.remainingMessages
+      limitReached.value = response.limitReached
+      
+      // Add assistant message if not already added
+      if (!messages.value.find(m => m.id === response.assistantMessage.id)) {
+        messages.value.push(response.assistantMessage)
+        isTyping.value = false
+        scrollToBottom()
+        loadSessions()
+      }
+    })
+  }
+}
+
 const sendMessage = async () => {
-  if (!inputMessage.value.trim() || isTyping.value || limitReached.value) return
+  if (!inputMessage.value.trim() || isTyping.value || limitReached.value || !connected.value) return
 
   const content = inputMessage.value.trim()
   inputMessage.value = ''
 
   // Adiciona mensagem do usuário localmente
+  const userMsgId = Date.now()
   messages.value.push({
-    id: Date.now(),
+    id: userMsgId,
     role: 'USER',
     content,
     createdAt: new Date().toISOString(),
@@ -246,28 +304,40 @@ const sendMessage = async () => {
   scrollToBottom()
   isTyping.value = true
 
-  try {
-    const response = await post<SendMessageResponse>('/chat/message', {
+  if (stompClient && stompClient.connected) {
+    stompClient.send('/app/chat.sendMessage', {}, JSON.stringify({
       content,
-      sessionId: currentSessionId.value,
-    })
+      sessionId: currentSessionId.value
+    }))
+  } else {
+    // Fallback para REST se o WebSocket falhar
+    try {
+      const response = await post<SendMessageResponse>('/chat/message', {
+        content,
+        sessionId: currentSessionId.value,
+      })
+      
+      // If session changed, subscribe to new one
+      if (currentSessionId.value !== response.sessionId) {
+        currentSessionId.value = response.sessionId
+        subscribeToSession(response.sessionId)
+      }
 
-    currentSessionId.value = response.sessionId
-    remainingMessages.value = response.remainingMessages
-    limitReached.value = response.limitReached
+      remainingMessages.value = response.remainingMessages
+      limitReached.value = response.limitReached
 
-    messages.value.push(response.assistantMessage)
-    await loadSessions()
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : ''
-    if (message.includes('limite')) {
-      limitReached.value = true
-    } else {
-      toast.add({ title: 'Erro ao enviar mensagem', description: message || 'Erro ao enviar mensagem', color: 'error' })
+      messages.value.push(response.assistantMessage)
+      await loadSessions()
+    } catch (error: any) {
+      if (error.message?.includes('limite')) {
+        limitReached.value = true
+      } else {
+        toast.add({ title: 'Erro ao enviar mensagem', color: 'error' })
+      }
+    } finally {
+      isTyping.value = false
+      scrollToBottom()
     }
-  } finally {
-    isTyping.value = false
-    scrollToBottom()
   }
 }
 
@@ -284,8 +354,10 @@ const newChat = () => {
 
 const loadSession = async (sessionId: string) => {
   currentSessionId.value = sessionId
+  subscribeToSession(sessionId)
   try {
-    messages.value = await get(`/chat/sessions/${sessionId}/messages`)
+    const response = await get<any>(`/chat/sessions/${sessionId}/messages`)
+    messages.value = response
     scrollToBottom()
   } catch {
     toast.add({ title: 'Erro ao carregar conversa', color: 'error' })
@@ -294,7 +366,8 @@ const loadSession = async (sessionId: string) => {
 
 const loadSessions = async () => {
   try {
-    sessions.value = await get('/chat/sessions')
+    const response = await get<any>('/chat/sessions')
+    sessions.value = response
   } catch (error) {
     console.error('Error loading sessions:', error)
   }
@@ -316,5 +389,35 @@ const formatTime = (date: string) => {
   return new Date(date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
 }
 
-onMounted(loadSessions)
+onMounted(() => {
+  loadSessions()
+  connectWebSocket()
+})
+
+onUnmounted(() => {
+  if (stompClient) {
+    stompClient.disconnect()
+  }
+})
+
+watch(currentSessionId, (newId, oldId) => {
+  if (newId && newId !== oldId) {
+    subscribeToSession(newId)
+  }
+})
 </script>
+
+<style>
+.markdown-content h1 { @apply text-xl font-bold mb-2; }
+.markdown-content h2 { @apply text-lg font-bold mb-2; }
+.markdown-content h3 { @apply text-base font-bold mb-1; }
+.markdown-content p { @apply mb-2 last:mb-0; }
+.markdown-content ul { @apply list-disc ml-5 mb-2; }
+.markdown-content ol { @apply list-decimal ml-5 mb-2; }
+.markdown-content code { @apply bg-slate-200 px-1 rounded font-mono text-xs; }
+.markdown-content pre { @apply bg-slate-900 text-white p-3 rounded-lg overflow-x-auto mb-2 text-xs; }
+.markdown-content blockquote { @apply border-l-4 border-primary-500 pl-4 py-1 italic mb-2; }
+.markdown-content table { @apply w-full border-collapse mb-2; }
+.markdown-content th, .markdown-content td { @apply border border-slate-300 p-2 text-left; }
+.markdown-content th { @apply bg-slate-100; }
+</style>

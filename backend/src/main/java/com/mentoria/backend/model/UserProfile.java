@@ -14,8 +14,10 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "user_profiles")
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class UserProfile {
 
@@ -39,6 +41,15 @@ public class UserProfile {
     @Column(name = "study_hours_per_day")
     @Builder.Default
     private Integer studyHoursPerDay = 2;
+
+    @Column(name = "daily_goal_minutes")
+    @Builder.Default
+    private Integer dailyGoalMinutes = 120;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "mentor_style")
+    @Builder.Default
+    private MentorStyle mentorStyle = MentorStyle.BALANCED;
 
     @Type(JsonBinaryType.class)
     @Column(name = "available_days", columnDefinition = "jsonb")
@@ -87,5 +98,9 @@ public class UserProfile {
 
     public enum LearningStyle {
         VISUAL, READING, PRACTICAL, MIXED
+    }
+
+    public enum MentorStyle {
+        BALANCED, DETAILED, DIRECT, ENCOURAGING
     }
 }

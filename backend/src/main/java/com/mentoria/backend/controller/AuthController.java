@@ -34,16 +34,12 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.ok("Login realizado", response));
     }
 
-    /**
-     * Após {@code signInWithPassword} / {@code signUp} no cliente Supabase, chame este endpoint com os tokens da sessão.
-     */
     @PostMapping("/supabase/session")
     public ResponseEntity<ApiResponse<AuthResponse>> supabaseSession(
             @Valid @RequestBody SupabaseSessionRequest request) {
         AuthResponse response = authService.syncSupabaseSession(
                 request.getAccessToken(),
-                request.getRefreshToken()
-        );
+                request.getRefreshToken());
         return ResponseEntity.ok(ApiResponse.ok("Sessão sincronizada", response));
     }
 
@@ -52,5 +48,10 @@ public class AuthController {
             @RequestHeader("X-Refresh-Token") String refreshToken) {
         AuthResponse response = authService.refreshToken(refreshToken);
         return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout() {
+        return ResponseEntity.ok(ApiResponse.ok("Logout realizado com sucesso"));
     }
 }

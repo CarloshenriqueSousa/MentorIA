@@ -111,6 +111,26 @@
         :disabled="!form.acceptTerms"
         class="!rounded-xl"
       />
+
+      <div class="relative my-6">
+        <div class="absolute inset-0 flex items-center">
+          <span class="w-full border-t border-stone-200" />
+        </div>
+        <div class="relative flex justify-center text-xs uppercase">
+          <span class="bg-white px-2 text-stone-400">Ou crie com</span>
+        </div>
+      </div>
+
+      <UButton
+        color="neutral"
+        variant="outline"
+        block
+        disabled
+        size="lg"
+        icon="i-simple-icons-google"
+        label="Google (em breve)"
+        class="!rounded-xl"
+      />
     </UForm>
 
     <p class="text-center text-sm text-stone-500 mt-6">

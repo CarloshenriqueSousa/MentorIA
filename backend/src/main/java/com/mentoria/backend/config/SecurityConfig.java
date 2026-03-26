@@ -1,6 +1,7 @@
 package com.mentoria.backend.config;
 
 import com.mentoria.backend.security.JwtAuthenticationFilter;
+import com.mentoria.backend.security.RateLimitingFilter;
 import com.mentoria.backend.security.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -29,29 +30,28 @@ public class SecurityConfig {
     private final PasswordEncoder passwordEncoder;
 
     /**
-     * {@code JwtAuthenticationFilter} é parâmetro do bean (não campo) para evitar ciclo:
+     * {@code JwtAuthenticationFilter} é parâmetro do bean (não campo) para evitar
+     * ciclo:
      * Filter → SupabaseUserProvisioningService → PasswordEncoder → SecurityConfig.
      */
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
-            JwtAuthenticationFilter jwtAuthFilter
-    ) throws Exception {
+            JwtAuthenticationFilter jwtAuthFilter,
+            RateLimitingFilter rateLimitingFilter) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/payments/webhook").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                        .anyRequest().authenticated())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider(passwordEncoder))
+                .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
