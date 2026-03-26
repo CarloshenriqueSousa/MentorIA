@@ -15,8 +15,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 /**
- * Cria usuário local de teste (admin) para login em {@code POST /auth/login}.
+ * Cria usuários locais de teste (admin + usuário comum) para login em {@code POST /auth/login}.
  * Desative com {@code app.seed.test-user.enabled=false}.
  */
 @Component
@@ -33,27 +35,79 @@ public class SeedTestUserRunner implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
+        seedAdminIfMissing();
+        seedUserIfMissing();
+    }
+
+    private void seedAdminIfMissing() {
         String email = props.getEmail().toLowerCase().trim();
-        if (userRepository.findByEmail(email).isPresent()) {
-            log.debug("Seed: usuário {} já existe", email);
-            return;
-        }
+        Optional<User> existing = userRepository.findByEmail(email);
+        boolean created = existing.isEmpty();
 
-        User user = User.builder()
-                .email(email)
-                .name(props.getName())
-                .passwordHash(passwordEncoder.encode(props.getPassword()))
-                .planType(User.PlanType.FREE)
-                .role(UserRole.ADMIN)
-                .build();
-        user = userRepository.save(user);
+        User user = existing.orElseGet(() ->
+                userRepository.save(User.builder()
+                    .email(email)
+                    .name(props.getName())
+                    .passwordHash(passwordEncoder.encode(props.getPassword()))
+                    .planType(User.PlanType.FREE)
+                    .role(UserRole.ADMIN)
+                    .build())
+        );
 
-        UserProfile profile = UserProfile.builder()
-                .user(user)
-                .completedOnboarding(true)
-                .build();
+        // Garante login local (senha demo) mesmo quando o usuário nasceu via Supabase.
+        user.setRole(UserRole.ADMIN);
+        user.setPlanType(User.PlanType.FREE);
+        user.setPasswordHash(passwordEncoder.encode(props.getPassword()));
+        userRepository.save(user);
+
+        // Garante que existe profile para esse usuário.
+        UserProfile profile = profileRepository.findByUser_Id(user.getId())
+                .orElseGet(() -> UserProfile.builder()
+                        .user(user)
+                        .completedOnboarding(true)
+                        .build());
+        profile.setCompletedOnboarding(true);
         profileRepository.save(profile);
 
-        log.info("Seed: criado usuário de teste admin {} (login local /auth/login)", email);
+        if (created) {
+            log.info("Seed: criado admin local {} (login local /auth/login)", email);
+        } else {
+            log.info("Seed: admin existente atualizado {} (role=ADMIN)", email);
+        }
+    }
+
+    private void seedUserIfMissing() {
+        String email = props.getUserEmail().toLowerCase().trim();
+        Optional<User> existing = userRepository.findByEmail(email);
+        boolean created = existing.isEmpty();
+
+        User user = existing.orElseGet(() ->
+                userRepository.save(User.builder()
+                    .email(email)
+                    .name(props.getUserName())
+                    .passwordHash(passwordEncoder.encode(props.getUserPassword()))
+                    .planType(User.PlanType.FREE)
+                    .role(UserRole.USER)
+                    .build())
+        );
+
+        user.setRole(UserRole.USER);
+        user.setPlanType(User.PlanType.FREE);
+        user.setPasswordHash(passwordEncoder.encode(props.getUserPassword()));
+        userRepository.save(user);
+
+        UserProfile profile = profileRepository.findByUser_Id(user.getId())
+                .orElseGet(() -> UserProfile.builder()
+                        .user(user)
+                        .completedOnboarding(props.isUserCompletedOnboarding())
+                        .build());
+        profile.setCompletedOnboarding(props.isUserCompletedOnboarding());
+        profileRepository.save(profile);
+
+        if (created) {
+            log.info("Seed: criado usuário de teste {} (login local /auth/login)", email);
+        } else {
+            log.info("Seed: usuário existente atualizado {} (role=USER)", email);
+        }
     }
 }

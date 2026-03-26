@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mentoria
+  labels:
+    app.kubernetes.io/name: mentoria
+    app.kubernetes.io/part-of: mentoria

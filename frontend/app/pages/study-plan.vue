@@ -74,6 +74,13 @@
                       size="xs"
                       variant="subtle"
                     />
+                    <div class="flex-1" />
+                    <UButton
+                      label="Registrar"
+                      size="xs"
+                      variant="outline"
+                      @click="registerDayProgress(item.week, day)"
+                    />
                   </div>
                   <ul class="space-y-1">
                     <li
@@ -81,8 +88,12 @@
                       :key="topic"
                       class="text-sm text-slate-700 flex items-center gap-2"
                     >
+                      <UCheckbox
+                        :model-value="completedTopics[`${item.week}:${day.day}:${topic}`] || false"
+                        @update:model-value="(v) => { completedTopics[`${item.week}:${day.day}:${topic}`] = !!v }"
+                      />
                       <UIcon name="i-heroicons-book-open" class="w-3 h-3 text-primary-500 flex-shrink-0" />
-                      {{ topic }}
+                      <span>{{ topic }}</span>
                     </li>
                   </ul>
                 </div>
@@ -158,6 +169,7 @@ type PlanContent = {
 }
 
 type ActivePlan = {
+  id: string
   title: string
   description: string
   completionPercentage: number
@@ -179,14 +191,47 @@ const activePlan = ref<ActivePlan | null>(null)
 const allPlans = ref<PreviousPlan[]>([])
 const generating = ref(false)
 
+// Track de tópicos marcados como concluídos por dia.
+// key = `${week}:${day}:${topic}`
+const completedTopics = reactive<Record<string, boolean>>({})
+
 const weeks = computed(() => {
   const content = activePlan.value?.planContent
   if (!content?.weeks) return []
   return content.weeks.map((w) => ({
     label: `Semana ${w.week} — ${w.focus || ''}`,
     days: w.days ?? [],
+    week: w.week,
   }))
 })
+
+const topicKey = (week: number, day: string, topic: string) => `${week}:${day}:${topic}`
+
+const registerDayProgress = async (week: number, day: PlanDay) => {
+  if (!activePlan.value?.id) {
+    toast.add({ title: 'Plano ativo inválido', color: 'warning' })
+    return
+  }
+
+  const selectedTopics = (day.topics || []).filter((t) => completedTopics[topicKey(week, day.day, t)])
+  if (!selectedTopics.length) {
+    toast.add({ title: 'Marque ao menos 1 tópico como concluído', color: 'warning' })
+    return
+  }
+
+  try {
+    await post('/dashboard/progress', {
+      minutesStudied: Math.max(0, Number(day.duration_minutes || 0)),
+      topicsCompleted: selectedTopics,
+      studyPlanId: activePlan.value.id,
+    })
+    toast.add({ title: 'Progresso registrado! +XP', color: 'success' })
+    await loadPlans()
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Erro ao registrar progresso'
+    toast.add({ title: 'Falha ao registrar', description: message, color: 'error' })
+  }
+}
 
 const generatePlan = async () => {
   generating.value = true

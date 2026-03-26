@@ -10,7 +10,6 @@ import com.mentoria.backend.service.AiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -26,15 +25,15 @@ public class ResearchAgentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
         UserProfile profile = profileRepository.findByUser_Id(userId).orElse(null);
 
-        String prompt = """
-                Atue como agente de pesquisa educacional.
-                Tema: %s
-                Retorne em português:
-                1) Critérios de validação usados.
-                2) Lista curada de materiais (livros, cursos, artigos, vídeos) com justificativa breve.
+        // IMPORTANTE: o ai-service já tem heurística + ferramenta de busca para "materiais/links/pdf".
+        // Para aproveitar isso, enviamos uma mensagem natural (em vez de "Atue como agente...").
+        String message = """
+                Preciso de materiais de estudo validados e com links sobre o tema: "%s".
+                Entregue uma lista curada (livros, cursos, artigos, vídeos e bancos de questões) com justificativa breve.
+                Se possível, priorize fontes oficiais e conteúdos atualizados.
                 """.formatted(topic);
 
-        AiService.AIResponse response = aiService.generateResponse(prompt, List.of(), profile, user);
+        AiService.AIResponse response = aiService.generateResponse(message, java.util.List.of(), profile, user);
 
         return ResearchAgentResponse.builder()
                 .topic(topic)

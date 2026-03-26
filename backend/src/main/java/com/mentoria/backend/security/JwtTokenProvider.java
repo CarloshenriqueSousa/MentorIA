@@ -1,7 +1,6 @@
 package com.mentoria.backend.security;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.security.MessageDigest;
 import java.util.function.Function;
 
 @Component
@@ -84,7 +84,28 @@ public class JwtTokenProvider {
     }
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = jwtSecret.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        // Keys.hmacShaKeyFor exige >= 256 bits (>= 32 bytes) para HS256.
+        // Em ambientes Windows/compose, o JWT_SECRET pode chegar truncado/alterado.
+        // Para garantir funcionamento, derivamos uma chave fixa de 256 bits via SHA-256.
+        byte[] secretBytes = jwtSecret == null
+                ? new byte[0]
+                : jwtSecret.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] keyBytes = secretBytes;
+        if (keyBytes.length < 32) {
+            keyBytes = sha256(secretBytes);
+        }
+        // Mesmo quando >= 32, mantemos a compatibilidade assinando com a entrada original;
+        // para casos longos a chave continua sendo o secret direto.
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    private static byte[] sha256(byte[] input) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            return md.digest(input);
+        } catch (java.security.NoSuchAlgorithmException e) {
+            // Fallback improvável; se falhar, usa 32 bytes zerados para não quebrar o login.
+            return new byte[32];
+        }
     }
 }

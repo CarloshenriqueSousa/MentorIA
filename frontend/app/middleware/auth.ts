@@ -4,7 +4,17 @@ export default defineNuxtRouteMiddleware((to) => {
   const authStore = useAuthStore()
   authStore.loadFromStorage()
 
-  const publicRoutes = ['/', '/auth/login', '/auth/register', '/terms', '/privacy']
+  const publicRoutes = [
+    '/',
+    '/auth/login',
+    '/auth/register',
+    '/auth/confirm',
+    '/auth/forgot-password',
+    '/auth/reset-password',
+    '/terms',
+    '/privacy',
+    '/pricing',
+  ]
   const isPublic = publicRoutes.includes(to.path)
 
   // Não logado tentando acessar rota privada

@@ -1,18 +1,18 @@
 <template>
-  <div class="min-h-screen bg-slate-50">
+  <div class="min-h-screen" style="background-color:#faf8f5">
     <!-- Sidebar -->
     <aside
       :class="[
-        'fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300',
+        'fixed inset-y-0 left-0 z-50 w-64 border-r border-stone-200 transform transition-transform duration-300',
         sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       ]"
     >
       <!-- Logo -->
-      <div class="flex items-center gap-3 px-6 py-5 border-b border-slate-200">
+      <div class="flex items-center gap-3 px-6 py-5 border-b border-stone-200" style="background-color:#fdfcfa">
         <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
           <UIcon name="i-heroicons-academic-cap" class="text-white w-5 h-5" />
         </div>
-        <span class="font-bold text-slate-900 text-lg">MentorIA</span>
+        <span class="font-bold text-stone-900 text-lg">MentorIA</span>
       </div>
 
       <!-- Navigation -->
@@ -24,7 +24,7 @@
           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
           :class="$route.path === item.to
             ? 'bg-primary-50 text-primary-700'
-            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
+            : 'text-stone-600 hover:bg-stone-100 hover:text-stone-900'"
         >
           <UIcon :name="item.icon" class="w-5 h-5 flex-shrink-0" />
           {{ item.label }}
@@ -32,14 +32,14 @@
       </nav>
 
       <!-- User info at bottom -->
-      <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-200">
+      <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-stone-200">
         <div class="flex items-center gap-3">
           <UAvatar
             :alt="authStore.user?.name"
             size="sm"
           />
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-slate-900 truncate">{{ authStore.user?.name }}</p>
+            <p class="text-sm font-medium text-stone-900 truncate">{{ authStore.user?.name }}</p>
             <UBadge
               :label="authStore.user?.planType"
               :color="authStore.user?.planType === 'FREE' ? 'neutral' : 'primary'"
@@ -68,7 +68,7 @@
     <!-- Main content -->
     <div class="lg:pl-64">
       <!-- Top bar -->
-      <header class="sticky top-0 z-30 bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-4">
+      <header class="sticky top-0 z-30 border-b border-stone-200 px-4 py-3 flex items-center gap-4" style="background-color:#fdfcfa">
         <UButton
           icon="i-heroicons-bars-3"
           variant="ghost"

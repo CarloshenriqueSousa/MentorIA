@@ -26,7 +26,6 @@ services:
     ports:
       - "8080:8080"
     environment:
-      # Sempre Postgres local (serviço `db`). Para Supabase remoto use `docker-compose.supabase.yml`.
       DATABASE_URL: jdbc:postgresql://db:5432/mentoria
       DATABASE_USER: mentoria
       DATABASE_PASSWORD: mentoria

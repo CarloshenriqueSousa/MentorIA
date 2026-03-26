@@ -62,6 +62,10 @@ app:
       email: teste@gmail.com
       password: teste123
       name: Usuário Teste
+      user-email: teste2@gmail.com
+      user-password: teste123
+      user-name: Usuário Teste 2
+      user-completed-onboarding: true
 
 management:
   endpoints:

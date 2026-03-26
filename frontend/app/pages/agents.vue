@@ -19,6 +19,10 @@
           <p class="text-xs text-slate-500 mt-1">Faz a ponte entre você e os agentes internos.</p>
         </template>
         <div class="space-y-3">
+          <UInput
+            v-model="liaisonForm.sessionId"
+            placeholder="sessionId (opcional, para manter histórico)"
+          />
           <UTextarea
             v-model="liaisonForm.content"
             placeholder="Ex.: preciso de um plano para o ENEM em 4 meses"
@@ -35,6 +39,19 @@
             <p><span class="font-medium">Roteado para:</span> {{ liaisonResponse.routedAgent }}</p>
             <p><span class="font-medium">Motivo:</span> {{ liaisonResponse.routingReason }}</p>
             <p class="text-slate-600 whitespace-pre-wrap">{{ liaisonResponse.chat.assistantMessage.content }}</p>
+          </div>
+
+          <div v-if="liaisonHistory.length" class="space-y-2">
+            <p class="text-xs font-medium text-slate-500">Histórico desta página</p>
+            <div
+              v-for="(item, idx) in liaisonHistory"
+              :key="idx"
+              class="p-3 rounded-lg border border-slate-200 bg-white text-sm space-y-1"
+            >
+              <p class="text-slate-700 whitespace-pre-wrap"><span class="font-medium">Você:</span> {{ item.user }}</p>
+              <p class="text-slate-600"><span class="font-medium">Rota:</span> {{ item.routedAgent }}</p>
+              <p class="text-slate-600 whitespace-pre-wrap"><span class="font-medium">Resposta:</span> {{ item.answer }}</p>
+            </div>
           </div>
         </div>
       </UCard>
@@ -81,9 +98,20 @@
             :loading="studyPlanPending"
             @click="generateStudyPlan"
           />
-          <div v-if="plannerResponse" class="p-3 rounded-lg bg-slate-50 text-sm space-y-2">
+          <div v-if="plannerResponse" class="p-3 rounded-lg bg-slate-50 text-sm space-y-3">
             <p><span class="font-medium">Objetivo:</span> {{ plannerResponse.goal }}</p>
-            <p class="text-slate-600 whitespace-pre-wrap">{{ plannerResponse.weeklyPlanGuidance }}</p>
+            <div class="space-y-1">
+              <p class="text-xs font-medium text-slate-500">Cursos recomendados</p>
+              <p class="text-slate-600 whitespace-pre-wrap">{{ plannerResponse.recommendedCourses }}</p>
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs font-medium text-slate-500">Métodos de estudo</p>
+              <p class="text-slate-600 whitespace-pre-wrap">{{ plannerResponse.studyMethods }}</p>
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs font-medium text-slate-500">Estratégia semanal</p>
+              <p class="text-slate-600 whitespace-pre-wrap">{{ plannerResponse.weeklyPlanGuidance }}</p>
+            </div>
           </div>
           <div v-if="studyPlanFeedback" class="text-xs text-primary-700 bg-primary-50 rounded px-3 py-2">
             {{ studyPlanFeedback }}
@@ -143,6 +171,8 @@ const researchResponse = ref<ResearchResponse | null>(null)
 const plannerResponse = ref<PlannerResponse | null>(null)
 const studyPlanFeedback = ref('')
 
+const liaisonHistory = ref<Array<{ user: string; routedAgent: string; answer: string }>>([])
+
 const sendToLiaison = async () => {
   if (!liaisonForm.content.trim()) {
     toast.add({ title: 'Digite uma mensagem', color: 'warning' })
@@ -150,9 +180,15 @@ const sendToLiaison = async () => {
   }
   liaisonPending.value = true
   try {
+    const content = liaisonForm.content.trim()
     liaisonResponse.value = await post<LiaisonResponse>('/agents/liaison/message', {
       content: liaisonForm.content.trim(),
       sessionId: liaisonForm.sessionId || undefined,
+    })
+    liaisonHistory.value.unshift({
+      user: content,
+      routedAgent: liaisonResponse.value.routedAgent,
+      answer: liaisonResponse.value.chat.assistantMessage.content,
     })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Erro no agente de contato'

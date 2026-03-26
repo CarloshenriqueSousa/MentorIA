@@ -17,6 +17,40 @@ async function tryRefreshSupabaseSession(authStore: ReturnType<typeof useAuthSto
   }
 }
 
+async function tryRefreshLocalSession(
+  authStore: ReturnType<typeof useAuthStore>,
+): Promise<boolean> {
+  if (!import.meta.client) {
+    return false
+  }
+  if (!authStore.refreshToken) {
+    return false
+  }
+  const refresh = authStore.refreshToken.trim()
+  if (!refresh) {
+    return false
+  }
+
+  try {
+    const config = useRuntimeConfig()
+    const res = await fetch(`${config.public.apiBase}/auth/refresh`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Refresh-Token': refresh,
+      },
+    })
+    const json = await res.json()
+    if (!res.ok || !json?.success || !json?.data?.accessToken) {
+      return false
+    }
+    authStore.setAuth(json.data)
+    return true
+  } catch {
+    return false
+  }
+}
+
 export const useApi = () => {
   const config = useRuntimeConfig()
   const authStore = useAuthStore()
@@ -44,10 +78,18 @@ export const useApi = () => {
     })
 
     if (response.status === 401 && !isRetry && import.meta.client) {
-      const refreshed = await tryRefreshSupabaseSession(authStore)
-      if (refreshed) {
+      // 1) tenta refresh via Supabase (quando token veio do Supabase)
+      const refreshedSupabase = await tryRefreshSupabaseSession(authStore)
+      if (refreshedSupabase) {
         return request<T>(endpoint, options, true)
       }
+
+      // 2) fallback: refresh local do backend (quando login foi /auth/login)
+      const refreshedLocal = await tryRefreshLocalSession(authStore)
+      if (refreshedLocal) {
+        return request<T>(endpoint, options, true)
+      }
+
       authStore.logout()
       await router.push('/auth/login')
       throw new Error('Sessão expirada')
