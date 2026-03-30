@@ -25,7 +25,10 @@ public class UserController {
             @Valid @RequestBody UpdateProfileRequest request) {
         UUID userId = authHelper.getCurrentUserId();
         userService.updateProfile(userId, request);
-        return ResponseEntity.ok(ApiResponse.ok("Perfil atualizado com sucesso"));
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .success(true)
+                .message("Perfil atualizado com sucesso")
+                .build());
     }
 
     @PutMapping("/password")
@@ -33,7 +36,10 @@ public class UserController {
             @Valid @RequestBody ChangePasswordRequest request) {
         UUID userId = authHelper.getCurrentUserId();
         userService.changePassword(userId, request);
-        return ResponseEntity.ok(ApiResponse.ok("Senha alterada com sucesso"));
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .success(true)
+                .message("Senha alterada com sucesso")
+                .build());
     }
 
     @PutMapping("/settings")
@@ -41,7 +47,10 @@ public class UserController {
             @Valid @RequestBody UpdateSettingsRequest request) {
         UUID userId = authHelper.getCurrentUserId();
         userService.updateSettings(userId, request);
-        return ResponseEntity.ok(ApiResponse.ok("Configurações atualizadas com sucesso"));
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .success(true)
+                .message("Configurações atualizadas com sucesso")
+                .build());
     }
 
     @GetMapping("/settings")

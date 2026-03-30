@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -90,7 +91,7 @@ public class UserService {
                 .dailyGoalMinutes(profile.getDailyGoalMinutes())
                 .mentorStyle(profile.getMentorStyle())
                 .language((String) extraInfo.get("language"))
-                .notifications((Boolean) extraInfo.get("notifications"))
+                .notifications((Map<String, Object>) extraInfo.get("notifications"))
                 .build();
     }
 }

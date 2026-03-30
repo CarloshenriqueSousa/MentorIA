@@ -3,10 +3,12 @@ package com.mentoria.backend.dto.request;
 import com.mentoria.backend.model.UserProfile;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import lombok.Builder;
 import lombok.Data;
 import java.util.Map;
 
 @Data
+@Builder
 public class UpdateSettingsRequest {
     private String language;
 
