@@ -17,18 +17,30 @@
         </template>
 
         <div class="flex-1 overflow-y-auto space-y-1 -mx-4 px-4">
-          <button
+          <div
             v-for="session in sessions"
             :key="session.id"
-            class="w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors"
-            :class="currentSessionId === session.id
-              ? 'bg-primary-50 text-primary-700'
-              : 'text-slate-600 hover:bg-slate-100'"
-            @click="loadSession(session.id)"
+            class="relative group"
           >
-            <p class="font-medium truncate">{{ session.title }}</p>
-            <p class="text-xs opacity-60 mt-0.5">{{ formatDate(session.updatedAt) }}</p>
-          </button>
+            <button
+              class="w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors pr-8"
+              :class="currentSessionId === session.id
+                ? 'bg-primary-50 text-primary-700'
+                : 'text-slate-600 hover:bg-slate-100'"
+              @click="loadSession(session.id)"
+            >
+              <p class="font-medium truncate">{{ session.title }}</p>
+              <p class="text-xs opacity-60 mt-0.5">{{ formatDate(session.updatedAt) }}</p>
+            </button>
+            <UButton
+              icon="i-heroicons-trash"
+              size="xs"
+              variant="ghost"
+              color="error"
+              class="opacity-0 group-hover:opacity-100 absolute right-1 top-1/2 -translate-y-1/2 transition-opacity"
+              @click.stop="deleteSession(session.id)"
+            />
+          </div>
 
           <div v-if="sessions.length === 0" class="text-center py-8 text-slate-400 text-sm">
             Nenhuma conversa ainda
@@ -109,20 +121,39 @@
 
           <!-- Conteúdo -->
           <div
+<<<<<<< Updated upstream
             class="max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed markdown-content"
+=======
+            class="max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed relative group"
+>>>>>>> Stashed changes
             :class="msg.role === 'USER'
               ? 'bg-primary-600 text-white rounded-tr-sm'
               : 'bg-slate-100 text-slate-800 rounded-tl-sm shadow-sm'"
           >
+<<<<<<< Updated upstream
             <div v-if="msg.role === 'ASSISTANT'" v-html="renderMarkdown(msg.content)" />
             <p v-else class="whitespace-pre-wrap">{{ msg.content }}</p>
             
+=======
+            <!-- AI: markdown rendered -->
+            <div v-if="msg.role === 'ASSISTANT'" class="prose prose-sm prose-slate max-w-none" v-html="renderMarkdown(msg.content)" />
+            <!-- User: plain text -->
+            <p v-else class="whitespace-pre-wrap">{{ msg.content }}</p>
+>>>>>>> Stashed changes
             <p
               class="text-xs mt-1 opacity-60"
               :class="msg.role === 'USER' ? 'text-right' : ''"
             >
               {{ formatTime(msg.createdAt) }}
             </p>
+            <!-- Copy button -->
+            <button
+              class="absolute -bottom-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white border border-slate-200 rounded-md px-2 py-0.5 text-xs text-slate-500 hover:text-slate-700 shadow-sm"
+              :class="msg.role === 'USER' ? 'right-2' : 'left-2'"
+              @click="copyMessage(msg.content)"
+            >
+              Copiar
+            </button>
           </div>
         </div>
 
@@ -184,9 +215,13 @@
 
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth'
+<<<<<<< Updated upstream
 import SockJS from 'sockjs-client'
 import Stomp from 'stompjs'
 import MarkdownIt from 'markdown-it'
+=======
+import { marked } from 'marked'
+>>>>>>> Stashed changes
 
 definePageMeta({
   layout: 'default',
@@ -194,7 +229,11 @@ definePageMeta({
 })
 
 const authStore = useAuthStore()
+<<<<<<< Updated upstream
 const { get, post, apiBase } = useApi()
+=======
+const { get, post, del } = useApi()
+>>>>>>> Stashed changes
 const toast = useToast()
 const md = new MarkdownIt({
   html: true,
@@ -350,6 +389,32 @@ const newChat = () => {
   currentSessionId.value = null
   messages.value = []
   limitReached.value = false
+}
+
+const deleteSession = async (sessionId: string) => {
+  try {
+    await del(`/chat/sessions/${sessionId}`)
+    sessions.value = sessions.value.filter(s => s.id !== sessionId)
+    if (currentSessionId.value === sessionId) {
+      newChat()
+    }
+    toast.add({ title: 'Conversa excluída', color: 'success' })
+  } catch {
+    toast.add({ title: 'Erro ao excluir conversa', color: 'error' })
+  }
+}
+
+const renderMarkdown = (content: string): string => {
+  return marked.parse(content, { breaks: true }) as string
+}
+
+const copyMessage = async (content: string) => {
+  try {
+    await navigator.clipboard.writeText(content)
+    toast.add({ title: 'Copiado!', color: 'success' })
+  } catch {
+    toast.add({ title: 'Erro ao copiar', color: 'error' })
+  }
 }
 
 const loadSession = async (sessionId: string) => {

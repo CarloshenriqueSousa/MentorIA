@@ -27,7 +27,9 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/ui',
     '@pinia/nuxt',
+    '@pinia/nuxt',
     '@nuxtjs/supabase',
+    '@vite-pwa/nuxt',
   ],
 
   // Login continua no backend Spring; Supabase fica disponível para Auth/Storage/Realtime quando quiser.
@@ -38,6 +40,38 @@ export default defineNuxtConfig({
   },
 
   css: ['~/assets/css/main.css'],
+
+  pwa: {
+    registerType: 'autoUpdate',
+    manifest: {
+      name: 'MentorIA',
+      short_name: 'MentorIA',
+      description: 'Seu mentor de estudos Pessoal com IA',
+      theme_color: '#faf8f5',
+      background_color: '#faf8f5',
+      icons: [
+        {
+          src: '/favicon.ico',
+          sizes: '64x64',
+          type: 'image/x-icon'
+        }
+      ]
+    },
+    workbox: {
+      navigateFallback: '/',
+      globPatterns: ['**/*.{js,css,html,png,svg,ico}']
+    },
+    client: {
+      installPrompt: true,
+      periodicSyncForUpdates: 3600
+    },
+    devOptions: {
+      enabled: false,
+      suppressWarnings: true,
+      navigateFallbackAllowlist: [/^\/$/],
+      type: 'module',
+    },
+  },
 
   runtimeConfig: {
     public: {

@@ -378,6 +378,7 @@ const loadDashboard = async () => {
   }
 }
 
+<<<<<<< Updated upstream
 onMounted(loadDashboard)
 </script>
 
@@ -401,3 +402,22 @@ onMounted(loadDashboard)
   }
 }
 </style>
+=======
+onMounted(async () => {
+  await loadDashboard()
+
+  // Detect successful upgrade from Stripe
+  const route = useRoute()
+  if (route.query.upgrade === 'success') {
+    toast.add({
+      title: 'Upgrade realizado com sucesso! 🎉',
+      description: 'Seu plano foi atualizado. Aproveite todos os recursos!',
+      color: 'success',
+    })
+    // Clean URL
+    const router = useRouter()
+    router.replace({ path: '/dashboard', query: {} })
+  }
+})
+</script>
+>>>>>>> Stashed changes
