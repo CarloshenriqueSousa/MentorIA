@@ -5,23 +5,40 @@ metadata:
   namespace: mentoria
   labels:
     app.kubernetes.io/name: ai-service
+    app.kubernetes.io/component: ai
     app.kubernetes.io/part-of: mentoria
 spec:
   replicas: 2
+  revisionHistoryLimit: 5
   selector:
     matchLabels:
       app: ai-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   template:
     metadata:
       labels:
         app: ai-service
         app.kubernetes.io/name: ai-service
+        app.kubernetes.io/component: ai
     spec:
+      terminationGracePeriodSeconds: 30
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: ai-service
       containers:
         - name: ai-service
           image: mentoria/ai-service:latest
           ports:
             - containerPort: 8000
+              name: http
           envFrom:
             - configMapRef:
                 name: mentoria-config
@@ -38,18 +55,26 @@ spec:
             limits:
               cpu: "1"
               memory: 512Mi
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            failureThreshold: 15
+            periodSeconds: 3
           readinessProbe:
             httpGet:
               path: /health
               port: 8000
             initialDelaySeconds: 5
             periodSeconds: 10
+            timeoutSeconds: 3
           livenessProbe:
             httpGet:
               path: /health
               port: 8000
-            initialDelaySeconds: 15
+            initialDelaySeconds: 10
             periodSeconds: 30
+            timeoutSeconds: 5
 ---
 apiVersion: v1
 kind: Service
@@ -58,6 +83,7 @@ metadata:
   namespace: mentoria
   labels:
     app.kubernetes.io/name: ai-service
+    app.kubernetes.io/component: ai
     app.kubernetes.io/part-of: mentoria
 spec:
   type: ClusterIP
@@ -66,12 +92,15 @@ spec:
   ports:
     - port: 8000
       targetPort: 8000
+      name: http
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: ai-service-hpa
   namespace: mentoria
+  labels:
+    app.kubernetes.io/part-of: mentoria
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -86,3 +115,23 @@ spec:
         target:
           type: Utilization
           averageUtilization: 70
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ai-service-pdb
+  namespace: mentoria
+  labels:
+    app.kubernetes.io/part-of: mentoria
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: ai-service

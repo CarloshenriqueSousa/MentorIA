@@ -378,31 +378,6 @@ const loadDashboard = async () => {
   }
 }
 
-<<<<<<< Updated upstream
-onMounted(loadDashboard)
-</script>
-
-<style scoped>
-.font-outfit {
-  font-family: 'Outfit', sans-serif;
-}
-
-.animate-bounce-slow {
-  animation: bounce 3s infinite;
-}
-
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(-5%);
-    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
-  }
-  50% {
-    transform: translateY(0);
-    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
-  }
-}
-</style>
-=======
 onMounted(async () => {
   await loadDashboard()
 
@@ -420,4 +395,3 @@ onMounted(async () => {
   }
 })
 </script>
->>>>>>> Stashed changes

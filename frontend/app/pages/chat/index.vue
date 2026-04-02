@@ -121,25 +121,15 @@
 
           <!-- Conteúdo -->
           <div
-<<<<<<< Updated upstream
-            class="max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed markdown-content"
-=======
             class="max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed relative group"
->>>>>>> Stashed changes
             :class="msg.role === 'USER'
               ? 'bg-primary-600 text-white rounded-tr-sm'
               : 'bg-slate-100 text-slate-800 rounded-tl-sm shadow-sm'"
           >
-<<<<<<< Updated upstream
-            <div v-if="msg.role === 'ASSISTANT'" v-html="renderMarkdown(msg.content)" />
-            <p v-else class="whitespace-pre-wrap">{{ msg.content }}</p>
-            
-=======
             <!-- AI: markdown rendered -->
             <div v-if="msg.role === 'ASSISTANT'" class="prose prose-sm prose-slate max-w-none" v-html="renderMarkdown(msg.content)" />
             <!-- User: plain text -->
             <p v-else class="whitespace-pre-wrap">{{ msg.content }}</p>
->>>>>>> Stashed changes
             <p
               class="text-xs mt-1 opacity-60"
               :class="msg.role === 'USER' ? 'text-right' : ''"
@@ -215,25 +205,19 @@
 
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth'
-<<<<<<< Updated upstream
+import MarkdownIt from 'markdown-it'
 import SockJS from 'sockjs-client'
 import Stomp from 'stompjs'
-import MarkdownIt from 'markdown-it'
-=======
-import { marked } from 'marked'
->>>>>>> Stashed changes
 
 definePageMeta({
   layout: 'default',
   middleware: 'auth',
 })
 
+const config = useRuntimeConfig()
+const apiBase = config.public.apiBase as string
 const authStore = useAuthStore()
-<<<<<<< Updated upstream
-const { get, post, apiBase } = useApi()
-=======
 const { get, post, del } = useApi()
->>>>>>> Stashed changes
 const toast = useToast()
 const md = new MarkdownIt({
   html: true,
@@ -404,10 +388,6 @@ const deleteSession = async (sessionId: string) => {
   }
 }
 
-const renderMarkdown = (content: string): string => {
-  return marked.parse(content, { breaks: true }) as string
-}
-
 const copyMessage = async (content: string) => {
   try {
     await navigator.clipboard.writeText(content)
@@ -473,16 +453,79 @@ watch(currentSessionId, (newId, oldId) => {
 </script>
 
 <style>
-.markdown-content h1 { @apply text-xl font-bold mb-2; }
-.markdown-content h2 { @apply text-lg font-bold mb-2; }
-.markdown-content h3 { @apply text-base font-bold mb-1; }
-.markdown-content p { @apply mb-2 last:mb-0; }
-.markdown-content ul { @apply list-disc ml-5 mb-2; }
-.markdown-content ol { @apply list-decimal ml-5 mb-2; }
-.markdown-content code { @apply bg-slate-200 px-1 rounded font-mono text-xs; }
-.markdown-content pre { @apply bg-slate-900 text-white p-3 rounded-lg overflow-x-auto mb-2 text-xs; }
-.markdown-content blockquote { @apply border-l-4 border-primary-500 pl-4 py-1 italic mb-2; }
-.markdown-content table { @apply w-full border-collapse mb-2; }
-.markdown-content th, .markdown-content td { @apply border border-slate-300 p-2 text-left; }
-.markdown-content th { @apply bg-slate-100; }
+.markdown-content h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.markdown-content h2 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.markdown-content h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+.markdown-content p {
+  margin-bottom: 0.5rem;
+}
+.markdown-content p:last-child {
+  margin-bottom: 0;
+}
+.markdown-content ul {
+  list-style-type: disc;
+  margin-left: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+.markdown-content ol {
+  list-style-type: decimal;
+  margin-left: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+.markdown-content code {
+  background-color: #e2e8f0;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+  border-radius: 0.25rem;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.75rem;
+}
+.markdown-content pre {
+  background-color: #0f172a;
+  color: #fff;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+}
+.markdown-content pre code {
+  background-color: transparent;
+  padding: 0;
+  font-size: inherit;
+}
+.markdown-content blockquote {
+  border-left: 4px solid var(--ui-primary);
+  padding-left: 1rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  font-style: italic;
+  margin-bottom: 0.5rem;
+}
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0.5rem;
+}
+.markdown-content th,
+.markdown-content td {
+  border: 1px solid #cbd5e1;
+  padding: 0.5rem;
+  text-align: left;
+}
+.markdown-content th {
+  background-color: #f1f5f9;
+}
 </style>

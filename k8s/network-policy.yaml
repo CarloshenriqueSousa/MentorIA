@@ -1,0 +1,83 @@
+# ── NetworkPolicy: Isolamento entre microsserviços ──
+# AI Service só aceita tráfego do Backend
+# Backend aceita de Frontend e Ingress
+# Frontend aceita do Ingress
+
+---
+# AI Service: só aceita do backend (interno)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ai-service-allow-backend
+  namespace: mentoria
+  labels:
+    app.kubernetes.io/part-of: mentoria
+spec:
+  podSelector:
+    matchLabels:
+      app: ai-service
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: backend
+      ports:
+        - protocol: TCP
+          port: 8000
+---
+# Backend: aceita do ingress-nginx e comunicação interna
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-allow-ingress
+  namespace: mentoria
+  labels:
+    app.kubernetes.io/part-of: mentoria
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
+    - Ingress
+  ingress:
+    # Tráfego do Ingress Controller (namespace ingress-nginx)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+    # Tráfego interno do frontend (para SSR fetch)
+    - from:
+        - podSelector:
+            matchLabels:
+              app: frontend
+      ports:
+        - protocol: TCP
+          port: 8080
+---
+# Frontend: aceita do ingress-nginx
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend-allow-ingress
+  namespace: mentoria
+  labels:
+    app.kubernetes.io/part-of: mentoria
+spec:
+  podSelector:
+    matchLabels:
+      app: frontend
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 3000

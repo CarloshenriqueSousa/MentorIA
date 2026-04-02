@@ -101,11 +101,6 @@
       </UForm>
     </UCard>
 
-<<<<<<< Updated upstream
-    <p class="text-center text-sm text-slate-600 mt-6">
-      Não tem conta?
-      <NuxtLink to="/auth/register" class="text-primary-600 font-medium hover:underline">
-=======
     <!-- Social login placeholders -->
     <div class="space-y-3">
       <button
@@ -120,7 +115,6 @@
     <p class="text-center text-sm text-stone-500 mt-8">
       Não tem conta?
       <NuxtLink to="/auth/register" class="text-primary-600 font-semibold hover:underline">
->>>>>>> Stashed changes
         Criar conta grátis
       </NuxtLink>
     </p>
@@ -145,14 +139,6 @@ const showPassword = ref(false)
 
 const schema = z.object({
   email: z.string().email('Email inválido'),
-<<<<<<< Updated upstream
-  password: z.string().min(8, 'Senha deve ter pelo menos 8 caracteres'),
-})
-
-const localSchema = z.object({
-  email: z.string().email('Email inválido'),
-=======
->>>>>>> Stashed changes
   password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
 })
 
@@ -195,12 +181,6 @@ const onSubmit = async () => {
     })
 
     if (error) {
-<<<<<<< Updated upstream
-      throw new Error(error.message)
-    }
-    if (!data.session) {
-      throw new Error('Sessão não retornada. Confirme seu email se o projeto exigir verificação.')
-=======
       // Supabase retorna "Invalid login credentials" — traduzir
       if (error.message.includes('Invalid login credentials')) {
         throw new Error('Email ou senha incorretos. Verifique seus dados e tente novamente.')
@@ -212,7 +192,6 @@ const onSubmit = async () => {
     }
     if (!data.session) {
       throw new Error('Sessão não retornada. Confirme seu email para poder entrar.')
->>>>>>> Stashed changes
     }
 
     const response = await post<SessionResponse>('/auth/supabase/session', {

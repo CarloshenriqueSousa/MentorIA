@@ -134,12 +134,8 @@ import { useAuthStore } from '~/stores/auth'
 definePageMeta({ layout: 'default', middleware: 'auth' })
 
 const authStore = useAuthStore()
-<<<<<<< Updated upstream
-const { get, put } = useApi()
-=======
 const { get, put, del } = useApi()
 const supabase = useSupabaseClient()
->>>>>>> Stashed changes
 const toast = useToast()
 const router = useRouter()
 
@@ -170,24 +166,12 @@ const passwordForm = reactive({
 const saveProfile = async () => {
   savingProfile.value = true
   try {
-<<<<<<< Updated upstream
-    await put('/users/profile', { name: profileForm.name })
-    authStore.updateUser({ name: profileForm.name })
-    toast.add({ title: 'Perfil atualizado!', color: 'success' })
-  } catch (error: any) {
-    toast.add({ 
-      title: 'Erro ao atualizar perfil', 
-      description: error.message || 'Erro desconhecido', 
-      color: 'error' 
-    })
-=======
     await put('/users/me', { name: profileForm.name })
     authStore.updateUser({ name: profileForm.name })
     toast.add({ title: 'Perfil atualizado!', color: 'success' })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Erro ao salvar perfil'
     toast.add({ title: 'Erro', description: message, color: 'error' })
->>>>>>> Stashed changes
   } finally {
     savingProfile.value = false
   }
@@ -204,35 +188,18 @@ const changePassword = async () => {
   }
   savingPassword.value = true
   try {
-<<<<<<< Updated upstream
-    await put('/users/password', {
-      currentPassword: passwordForm.currentPassword,
-      newPassword: passwordForm.newPassword,
-      confirmPassword: passwordForm.confirmPassword
-    })
-=======
     const { error } = await supabase.auth.updateUser({
       password: passwordForm.newPassword,
     })
     if (error) {
       throw new Error(error.message)
     }
->>>>>>> Stashed changes
     toast.add({ title: 'Senha alterada com sucesso!', color: 'success' })
     passwordForm.newPassword = ''
     passwordForm.confirmPassword = ''
-<<<<<<< Updated upstream
-  } catch (error: any) {
-    toast.add({ 
-      title: 'Erro ao alterar senha', 
-      description: error.message || 'Verifique sua senha atual', 
-      color: 'error' 
-    })
-=======
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Erro ao alterar senha'
     toast.add({ title: 'Erro', description: message, color: 'error' })
->>>>>>> Stashed changes
   } finally {
     savingPassword.value = false
   }

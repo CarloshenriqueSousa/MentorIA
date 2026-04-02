@@ -5,9 +5,25 @@
 # IDE
 .idea/
 .vscode/
+.cursor/
 
 # OS / tooling
 **/target/
 **/build/
 *.log
 
+# Node.js
+**/node_modules/
+
+# Nuxt
+**/.nuxt/
+**/.output/
+
+# Python
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+
+# Docker
+**/build.log
+**/build-utf8.log

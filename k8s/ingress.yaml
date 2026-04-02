@@ -6,19 +6,44 @@ metadata:
   labels:
     app.kubernetes.io/part-of: mentoria
   annotations:
+    # ── Proxy settings ──
     nginx.ingress.kubernetes.io/proxy-body-size: "10m"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "10"
+
+    # ── WebSocket support ──
     nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
     nginx.ingress.kubernetes.io/configuration-snippet: |
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection "upgrade";
+
+    # ── Rate limiting (proteção DDoS básica) ──
+    nginx.ingress.kubernetes.io/limit-rps: "20"
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "5"
+    nginx.ingress.kubernetes.io/limit-connections: "10"
+
+    # ── Security headers ──
+    nginx.ingress.kubernetes.io/server-snippet: |
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header X-XSS-Protection "1; mode=block" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    # ── TLS (descomente após instalar cert-manager) ──
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   ingressClassName: nginx
+  # ── TLS (descomente após configurar cert-manager) ──
+  # tls:
+  #   - hosts:
+  #       - mentoria.example.com
+  #     secretName: mentoria-tls
   rules:
     - host: mentoria.example.com
       http:
         paths:
+          # Backend API
           - path: /api
             pathType: Prefix
             backend:
@@ -26,6 +51,15 @@ spec:
                 name: backend
                 port:
                   number: 8080
+          # WebSocket endpoint
+          - path: /api/ws
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 8080
+          # Frontend (catch-all)
           - path: /
             pathType: Prefix
             backend:

@@ -1,5 +1,35 @@
-# Produção: não criar usuário de teste nem expor credenciais padrão
+# ── Produção ──
+# Ativado com: SPRING_PROFILES_ACTIVE=prod (via K8s ConfigMap)
+
+# Nunca criar/alterar schema automaticamente em produção
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+  # HikariCP connection pool otimizado
+  datasource:
+    hikari:
+      maximum-pool-size: 15
+      minimum-idle: 5
+      idle-timeout: 300000       # 5 min
+      max-lifetime: 1800000      # 30 min
+      connection-timeout: 10000  # 10s
+
+# Não criar usuário de teste em produção
 app:
   seed:
     test-user:
       enabled: false
+
+# Logging menos verboso
+logging:
+  level:
+    root: WARN
+    com.mentoria: INFO
+    org.springframework: WARN
+    org.hibernate.SQL: WARN

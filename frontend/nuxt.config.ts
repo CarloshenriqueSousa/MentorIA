@@ -27,7 +27,6 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/ui',
     '@pinia/nuxt',
-    '@pinia/nuxt',
     '@nuxtjs/supabase',
     '@vite-pwa/nuxt',
   ],
