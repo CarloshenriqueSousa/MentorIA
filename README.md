@@ -111,6 +111,3 @@ Acesse: [http://localhost:3001](http://localhost:3001)
 3. **Logs/Monitoramento Centralizados:** Instalação do stack ELK (Elasticsearch/Kibana) ou Grafana/Prometheus/Loki.
 4. **Deploy Automático (CI/CD):** Actions do Github rodando linting, Testes Unitários e criando containers pro Google Cloud Run ou AWS ECS.
 5. **Aplicação Mobile Nativa (PWA/Capacitor):** Gerar o bundle de iOS/Android utilizando o motor Nuxt.
-
----
-Feito com ☕ e focado na aprovação.
