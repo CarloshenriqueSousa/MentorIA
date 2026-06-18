@@ -30,9 +30,7 @@ public class SecurityConfig {
     private final PasswordEncoder passwordEncoder;
 
     /**
-     * {@code JwtAuthenticationFilter} é parâmetro do bean (não campo) para evitar
-     * ciclo:
-     * Filter → SupabaseUserProvisioningService → PasswordEncoder → SecurityConfig.
+     * {@code JwtAuthenticationFilter} é parâmetro do bean (não campo) para evitar ciclo de dependência.
      */
     @Bean
     public SecurityFilterChain securityFilterChain(

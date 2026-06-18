@@ -4,8 +4,8 @@
 
 | Pasta | Responsabilidade |
 |-------|------------------|
-| `backend/` | Spring Boot 3 — API REST, segurança, JPA, integrações (Stripe, Supabase JWT, AI service). |
-| `frontend/` | Nuxt 4 — UI, Pinia, `@nuxtjs/supabase` (Auth no cliente + sync com Spring). |
+| `backend/` | Spring Boot 3 — API REST, segurança, JPA, integrações (Stripe, AI service). |
+| `frontend/` | Nuxt 4 — UI, Pinia, autenticação via API Spring. |
 | `ai-service/` | Python/FastAPI — chamadas ao modelo (Claude). |
 | Raiz `.env` | Variáveis compartilhadas; o Nuxt carrega este arquivo automaticamente (`nuxt.config.ts`). |
 

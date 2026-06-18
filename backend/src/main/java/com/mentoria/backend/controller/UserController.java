@@ -1,5 +1,6 @@
 package com.mentoria.backend.controller;
 
+import com.mentoria.backend.dto.request.ChangePasswordRequest;
 import com.mentoria.backend.dto.request.UpdateProfileRequest;
 import com.mentoria.backend.dto.request.UpdateSettingsRequest;
 import com.mentoria.backend.dto.response.ApiResponse;
@@ -21,6 +22,14 @@ public class UserController {
 
     private final UserService userService;
     private final AuthHelper authHelper;
+
+    @PutMapping("/me/password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request) {
+        UUID userId = authHelper.getCurrentUserId();
+        userService.changePassword(userId, request);
+        return ResponseEntity.ok(ApiResponse.ok("Senha alterada com sucesso", null));
+    }
 
     @PutMapping("/me")
     public ResponseEntity<ApiResponse<Map<String, Object>>> updateProfile(

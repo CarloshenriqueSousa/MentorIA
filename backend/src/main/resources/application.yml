@@ -38,13 +38,6 @@ jwt:
 ai-service:
   url: ${AI_SERVICE_URL:http://localhost:8000}
 
-# Supabase (API / integrações; o JDBC continua em spring.datasource.*)
-supabase:
-  url: ${SUPABASE_URL:}
-  key: ${SUPABASE_KEY:}
-  service-role-key: ${SUPABASE_SERVICE_ROLE_KEY:}
-  jwt-secret: ${SUPABASE_JWT_SECRET:}
-
 stripe:
   secret-key: ${STRIPE_SECRET_KEY:sk_test_placeholder}
   webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_placeholder}

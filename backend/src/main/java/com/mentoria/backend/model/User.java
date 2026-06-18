@@ -22,20 +22,11 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    /**
-     * Null para contas criadas só via Supabase Auth (senha fica no Supabase).
-     */
-    @Column(name = "password_hash")
+    @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
     @Column(nullable = false)
     private String name;
-
-    /**
-     * UUID do usuário em {@code auth.users} (Supabase). Opcional para contas legadas só com senha local.
-     */
-    @Column(name = "supabase_user_id", unique = true)
-    private UUID supabaseUserId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "plan_type", nullable = false)

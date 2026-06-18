@@ -43,6 +43,9 @@
         <h2 class="font-semibold text-slate-900">Alterar senha</h2>
       </template>
       <UForm :state="passwordForm" class="space-y-4" @submit="changePassword">
+        <UFormField label="Senha atual">
+          <UInput v-model="passwordForm.currentPassword" type="password" icon="i-heroicons-lock-closed" class="w-full" />
+        </UFormField>
         <UFormField label="Nova senha">
           <UInput v-model="passwordForm.newPassword" type="password" icon="i-heroicons-lock-closed" class="w-full" />
         </UFormField>
@@ -135,7 +138,6 @@ definePageMeta({ layout: 'default', middleware: 'auth' })
 
 const authStore = useAuthStore()
 const { get, put, del } = useApi()
-const supabase = useSupabaseClient()
 const toast = useToast()
 const router = useRouter()
 
@@ -159,6 +161,7 @@ const profileForm = reactive({
 })
 
 const passwordForm = reactive({
+  currentPassword: '',
   newPassword: '',
   confirmPassword: '',
 })
@@ -178,8 +181,8 @@ const saveProfile = async () => {
 }
 
 const changePassword = async () => {
-  if (passwordForm.newPassword.length < 6) {
-    toast.add({ title: 'A senha deve ter pelo menos 6 caracteres', color: 'error' })
+  if (passwordForm.newPassword.length < 8) {
+    toast.add({ title: 'A senha deve ter pelo menos 8 caracteres', color: 'error' })
     return
   }
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
@@ -188,13 +191,13 @@ const changePassword = async () => {
   }
   savingPassword.value = true
   try {
-    const { error } = await supabase.auth.updateUser({
-      password: passwordForm.newPassword,
+    await put('/users/me/password', {
+      currentPassword: passwordForm.currentPassword,
+      newPassword: passwordForm.newPassword,
+      confirmPassword: passwordForm.confirmPassword,
     })
-    if (error) {
-      throw new Error(error.message)
-    }
     toast.add({ title: 'Senha alterada com sucesso!', color: 'success' })
+    passwordForm.currentPassword = ''
     passwordForm.newPassword = ''
     passwordForm.confirmPassword = ''
   } catch (error: unknown) {
@@ -209,7 +212,6 @@ const deleteAccount = async () => {
   deletingAccount.value = true
   try {
     await del('/users/me')
-    await supabase.auth.signOut()
     authStore.logout()
     toast.add({ title: 'Conta excluída com sucesso', color: 'success' })
     router.push('/')

@@ -60,7 +60,7 @@ kubectl apply -f k8s/secrets.yaml
 # Network Policies (isolamento entre microsserviços)
 kubectl apply -f k8s/network-policy.yaml
 
-# Serviços (o banco usa Supabase gerenciado — sem postgres local)
+# Serviços (PostgreSQL externo ou gerenciado)
 kubectl apply -f k8s/ai-service.yaml
 kubectl apply -f k8s/backend.yaml
 kubectl apply -f k8s/frontend.yaml
@@ -96,7 +96,7 @@ PodDisruptionBudgets garantem pelo menos 1 pod disponível durante rolling updat
 Internet → Ingress (nginx) + TLS + Rate Limiting + Security Headers
             ├── /api/*    → Backend (Spring Boot)  ×2-8  (HPA + PDB)
             │                 └── AI Service (FastAPI) ×2-6  (HPA + PDB)
-            │                 └── Supabase PostgreSQL (gerenciado)
+            │                 └── PostgreSQL (externo/gerenciado)
             ├── /api/ws   → Backend WebSocket (SockJS/STOMP)
             └── /*        → Frontend (Nuxt.js)     ×2-4  (HPA)
 
@@ -112,7 +112,7 @@ NetworkPolicies:
 |---------|----------|
 | `namespace.yaml` | Namespace `mentoria` |
 | `configmap.yaml` | ConfigMap (URLs, CORS, Java opts, Spring profile) |
-| `secrets.yaml` | Secret (DB, JWT, Anthropic, Stripe, Supabase) |
+| `secrets.yaml` | Secret (DB, JWT, Anthropic, Stripe) |
 | `backend.yaml` | Deployment + Service + HPA + PDB |
 | `ai-service.yaml` | Deployment + Service + HPA + PDB |
 | `frontend.yaml` | Deployment + Service + HPA |

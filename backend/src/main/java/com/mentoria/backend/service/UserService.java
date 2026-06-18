@@ -2,7 +2,9 @@ package com.mentoria.backend.service;
 
 import com.mentoria.backend.dto.request.UpdateProfileRequest;
 import com.mentoria.backend.dto.request.UpdateSettingsRequest;
+import com.mentoria.backend.dto.request.ChangePasswordRequest;
 import com.mentoria.backend.dto.response.UserSettingsResponse;
+import com.mentoria.backend.exception.BusinessException;
 import com.mentoria.backend.exception.ResourceNotFoundException;
 import com.mentoria.backend.model.User;
 import com.mentoria.backend.model.UserProfile;
@@ -10,6 +12,7 @@ import com.mentoria.backend.repository.UserProfileRepository;
 import com.mentoria.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +27,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public User updateProfile(UUID userId, UpdateProfileRequest request) {
@@ -32,6 +36,24 @@ public class UserService {
 
         user.setName(request.getName().trim());
         return userRepository.save(user);
+    }
+
+    @Transactional
+    public void changePassword(UUID userId, ChangePasswordRequest request) {
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new BusinessException("Senhas não coincidem");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
+            throw new BusinessException("Senha atual incorreta");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+        log.info("Senha alterada: userId={}", userId);
     }
 
     @Transactional(readOnly = true)
@@ -89,7 +111,6 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
-        // Soft-delete: desativa a conta
         user.setActive(false);
         user.setEmail("deleted_" + userId + "@removed.local");
         user.setName("Conta removida");
@@ -97,8 +118,6 @@ public class UserService {
 
         log.info("Account soft-deleted: userId={}", userId);
     }
-
-    // ---- helpers ----
 
     private String getStringOrDefault(Map<String, Object> map, String key, String def) {
         Object val = map.get(key);

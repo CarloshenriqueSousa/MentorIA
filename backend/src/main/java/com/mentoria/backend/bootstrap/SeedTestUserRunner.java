@@ -54,7 +54,7 @@ public class SeedTestUserRunner implements ApplicationRunner {
                     .build())
         );
 
-        // Garante login local (senha demo) mesmo quando o usuário nasceu via Supabase.
+        // Garante credenciais de demo atualizadas no startup.
         user.setRole(UserRole.ADMIN);
         user.setPlanType(User.PlanType.FREE);
         user.setPasswordHash(passwordEncoder.encode(props.getPassword()));

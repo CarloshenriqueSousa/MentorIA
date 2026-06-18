@@ -11,7 +11,7 @@ O MentorIA atua como um preceptor particular disponível 24/7. Ele não apenas r
 - **Backend (Core API):** Java 21 + Spring Boot 3, Spring Security, JPA/Hibernate.
 - **AI Service (Microserviço):** Python 3.12 + FastAPI, integração direta com a API da Anthropic (Claude 3.5 Sonnet).
 - **Banco de Dados:** PostgreSQL 16.
-- **Autenticação:** Supabase Auth + JWT assinado pelo Backend Spring.
+- **Autenticação:** JWT assinado pelo Backend Spring (login/registro local).
 - **Pagamentos:** Integração completa com Stripe (Checkout e Customer Portal).
 - **Infraestrutura:** Docker e Docker Compose nativos.
 
@@ -37,7 +37,7 @@ O portal do aluno foi construído utilizando as melhores práticas modernas:
 
 ### 2. Core API (`/backend`)
 O coração do SaaS. Responsável por garantir segurança e integridade transacional:
-- **Segurança Dupla:** O usuário autentica no Supabase, envia o token pro Backend que o valida e gera um JWT seguro de curto prazo.
+- **Segurança:** Spring Security com JWT para autenticação e autorização por plano.
 - **Integração Stripe:** Webhooks estruturados para atualizar o status `PlanType` (FREE, BASIC, PREMIUM) dinamicamente.
 - **Alta Performance:** Spring Data JPA otimizado com campos JSONB nativos no PostgreSQL.
 
@@ -67,7 +67,7 @@ Para garantir a maturidade de um produto "Pronto para o Mercado" (Production-Rea
 - Docker e Docker Compose instalados.
 - Node.js (v20+) e PNPM.
 - JDK 21+ e Maven (caso queira rodar o back-end fora do Docker).
-- Contas/Chaves de API ativas: Supabase, Stripe, e Anthropic (Claude).
+- Contas/Chaves de API ativas: Stripe e Anthropic (Claude).
 
 ### 1. Configurar Variáveis de Ambiente
 Copie o arquivo `.env.example` para `.env` na raiz do projeto e preencha as chaves reais:
@@ -76,24 +76,21 @@ Copie o arquivo `.env.example` para `.env` na raiz do projeto e preencha as chav
 cp .env.example .env
 ```
 
-No diretório `frontend`, crie também o seu arquivo `.env`:
+No diretório `frontend`, crie também o seu arquivo `.env` (opcional):
 ```text
 NUXT_PUBLIC_API_BASE=http://localhost:8080/api
-NUXT_PUBLIC_SUPABASE_URL=sua-url-aqui
-NUXT_PUBLIC_SUPABASE_KEY=sua-key-anon-aqui
 ```
 
-### 2. Iniciar Banco e Backend com Docker
-Na pasta raiz, execute:
+### 2. Iniciar PostgreSQL
+Na pasta raiz:
 ```bash
-docker-compose up -d --build
+docker compose up -d postgres
 ```
-Isso levantará:
-- PostgreSQL (na porta `5432`)
-- Spring Boot Backend (na porta `8080`)
-- FastAPI AI Service (na porta `8000`)
 
-### 3. Executar o Frontend (Modo Dev)
+### 3. Executar o Backend e AI Service
+Inicie o Spring Boot e o FastAPI conforme sua configuração local (portas `8080` e `8000`).
+
+### 4. Executar o Frontend (Modo Dev)
 Como o desenvolvimento da UI costuma exigir _Hot-Reload_, rodamos o frontend separadamente:
 ```bash
 cd frontend

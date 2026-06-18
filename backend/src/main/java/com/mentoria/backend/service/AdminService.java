@@ -2,7 +2,6 @@ package com.mentoria.backend.service;
 
 import com.mentoria.backend.dto.response.admin.AdminAgentDto;
 import com.mentoria.backend.dto.response.admin.AdminOverviewDto;
-import com.mentoria.backend.security.SupabaseJwtService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -14,19 +13,13 @@ public class AdminService {
 
     private final Environment environment;
     private final AiService aiService;
-    private final SupabaseJwtService supabaseJwtService;
 
     @Value("${spring.application.name:mentoria-backend}")
     private String applicationName;
 
-    public AdminService(
-            Environment environment,
-            AiService aiService,
-            SupabaseJwtService supabaseJwtService
-    ) {
+    public AdminService(Environment environment, AiService aiService) {
         this.environment = environment;
         this.aiService = aiService;
-        this.supabaseJwtService = supabaseJwtService;
     }
 
     public AdminOverviewDto getOverview() {
@@ -34,7 +27,6 @@ public class AdminService {
                 ? "default"
                 : String.join(",", environment.getActiveProfiles());
         boolean aiHealthy = aiService.isHealthy();
-        boolean supabaseJwtReady = supabaseJwtService.isConfigured();
 
         List<AdminAgentDto> agents = List.of(
                 AdminAgentDto.builder()
@@ -51,11 +43,9 @@ public class AdminService {
                         .id("liaison")
                         .name("Agente de orquestração")
                         .description("Faz a ponte entre o usuário, o backend e os demais agentes (sessão, contexto, permissões).")
-                        .status(supabaseJwtReady ? "ONLINE" : "BUSY")
-                        .detail(supabaseJwtReady
-                                ? "Autenticação local e Supabase prontas para sincronização de sessão."
-                                : "Autenticação local ativa; falta SUPABASE_JWT_SECRET para validar tokens Supabase no backend.")
-                        .integrationHint("Fluxo principal: /auth/login e /auth/supabase/session.")
+                        .status("ONLINE")
+                        .detail("Autenticação JWT local ativa via Spring Security.")
+                        .integrationHint("Fluxo principal: /auth/login e /auth/register.")
                         .build(),
                 AdminAgentDto.builder()
                         .id("study_planner")

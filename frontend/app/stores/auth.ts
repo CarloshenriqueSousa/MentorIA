@@ -43,7 +43,7 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    /** Atualiza só tokens (ex.: refresh da sessão Supabase). */
+    /** Atualiza só tokens após refresh da sessão. */
     patchTokens(accessToken: string, refreshToken?: string | null) {
       this.accessToken = accessToken
       if (refreshToken) {

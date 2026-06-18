@@ -34,17 +34,7 @@ spec:
               name: http
           env:
             - name: NUXT_PUBLIC_API_BASE
-              value: "/api"    # Relativo — Ingress faz o proxy
-            - name: SUPABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: mentoria-secrets
-                  key: SUPABASE_URL
-            - name: SUPABASE_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: mentoria-secrets
-                  key: SUPABASE_KEY
+              value: "/api"
           resources:
             requests:
               cpu: 100m

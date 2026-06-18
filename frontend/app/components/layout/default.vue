@@ -12,7 +12,7 @@
         <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
           <UIcon name="i-heroicons-academic-cap" class="text-white w-5 h-5" />
         </div>
-        <span class="font-bold text-stone-900 dark:text-white text-lg font-outfit">MentorIA</span>
+        <span class="font-bold text-stone-900 dark:text-white text-lg">MentorIA</span>
       </div>
 
       <!-- Navigation -->
@@ -138,17 +138,8 @@ const navItems = computed(() => {
   return items
 })
 
-const supabase = useSupabaseClient()
-
-const logout = async () => {
-  await supabase.auth.signOut()
+const logout = () => {
   authStore.logout()
   router.push('/auth/login')
 }
 </script>
-
-<style scoped>
-.font-outfit {
-  font-family: 'Outfit', sans-serif;
-}
-</style>
