@@ -6,6 +6,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 loadEnv({ path: resolve(__dirname, '..', '.env') })
 loadEnv({ path: resolve(__dirname, '.env'), override: true })
 
+const apiProxyTarget = process.env.NUXT_API_PROXY_TARGET || 'http://localhost:8080'
+
 export default defineNuxtConfig({
   typescript: {
     tsConfig: {
@@ -31,7 +33,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8080/api',
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api',
     },
   },
 
@@ -41,6 +43,15 @@ export default defineNuxtConfig({
     '/study-plan/**': { ssr: false },
     '/auth/**': { ssr: false },
     '/admin/**': { ssr: false },
+  },
+
+  nitro: {
+    devProxy: {
+      '/api': {
+        target: apiProxyTarget,
+        changeOrigin: true,
+      },
+    },
   },
 
   app: {
@@ -64,6 +75,14 @@ export default defineNuxtConfig({
   },
 
   vite: {
+    server: {
+      proxy: {
+        '/api': {
+          target: apiProxyTarget,
+          changeOrigin: true,
+        },
+      },
+    },
     build: {
       minify: false,
     },

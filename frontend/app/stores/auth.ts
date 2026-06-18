@@ -32,14 +32,19 @@ export const useAuthStore = defineStore('auth', {
 
   actions: {
     setAuth(data: { accessToken: string; refreshToken: string; user: User }) {
+      const user: User = {
+        ...data.user,
+        id: String(data.user.id),
+      }
+
       this.accessToken = data.accessToken
       this.refreshToken = data.refreshToken
-      this.user = data.user
+      this.user = user
 
       if (import.meta.client) {
         localStorage.setItem('access_token', data.accessToken)
         localStorage.setItem('refresh_token', data.refreshToken)
-        localStorage.setItem('user', JSON.stringify(data.user))
+        localStorage.setItem('user', JSON.stringify(user))
       }
     },
 
