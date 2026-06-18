@@ -1,8 +1,11 @@
 # ── Produção ──
 # Ativado com: SPRING_PROFILES_ACTIVE=prod (via K8s ConfigMap)
 
-# Nunca criar/alterar schema automaticamente em produção
 spring:
+  sql:
+    init:
+      mode: never
+
   jpa:
     hibernate:
       ddl-auto: validate

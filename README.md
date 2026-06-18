@@ -87,10 +87,33 @@ Na pasta raiz:
 docker compose up -d postgres
 ```
 
-### 3. Executar o Backend e AI Service
-Inicie o Spring Boot e o FastAPI conforme sua configuração local (portas `8080` e `8000`).
+Credenciais padrão (já no `.env`):
+- Host: `localhost:5432`
+- Banco: `mentoria`
+- Usuário/senha: `mentoria` / `mentoria`
 
-### 4. Executar o Frontend (Modo Dev)
+> Se você usava Supabase antes, **atualize o `.env`** — a URL antiga (`db.*.supabase.co`) não funciona mais.
+
+### 3. Executar o Backend
+Opção A — Docker (recomendado):
+```bash
+docker compose up -d backend
+```
+
+Opção B — IntelliJ / Maven na pasta `backend/` (carrega o `.env` da raiz automaticamente).
+
+Verifique: [http://localhost:8080/api/actuator/health](http://localhost:8080/api/actuator/health)
+
+Conta de teste criada no startup: **teste@gmail.com** / **teste123**
+
+### 4. Executar o AI Service (opcional para chat)
+```bash
+cd ai-service
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
+
+### 5. Executar o Frontend (Modo Dev)
 Como o desenvolvimento da UI costuma exigir _Hot-Reload_, rodamos o frontend separadamente:
 ```bash
 cd frontend
